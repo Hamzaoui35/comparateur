@@ -1,36 +1,36 @@
 # PROJECT STATE
-Statut : bloqué (D1 distant terminé ; reste le déploiement du vrai build Astro)
+Statut : terminé
 Objectif actuel : Phase 1 — fondation
-Dernière étape validée : 8 — seed distant rejouable sans doublon
-En cours : 4 et 9 (distant) — déploiement Worker Astro
-Prochaine action exacte :
-  1. Dans Cloudflare Dashboard, autoriser une fois l'intégration GitHub / Workers Builds pour le dépôt `Hamzaoui35/comparateur`.
-  2. Reprendre avec l'agent : créer/configurer le Worker depuis ce dépôt, build `npm run build`, deploy `npm run deploy`.
-  3. Vérifier l'URL workers.dev et /comparatifs/produit-test-a-meilleur-prix, puis mettre Statut : terminé.
+Dernière étape validée : 10 — preuves de généricité + validation distante
+En cours : aucune
+Prochaine action exacte : STOP. Ne pas commencer la phase 2 sans instruction explicite d'Aymen.
 
 ## Reste à faire
-- 4 : déployer le vrai build Astro sur workers.dev
-- 9 (distant) : vérifier page comparative publique + 404
+- Aucun élément bloquant pour la phase 1.
+- Optionnel : ajouter un lockfile au dépôt pour activer le cache de dépendances Cloudflare Builds.
 
 ## Blocages / À faire par Aymen
-- Cloudflare Workers Builds refuse la connexion API au dépôt tant que l'intégration GitHub Cloudflare n'a pas été autorisée une première fois. D1 et GitHub sont déjà terminés.
+- Aucun.
 
 ## Décisions prises
-- D1 créée via API Cloudflare dans la région WEUR : `comparateur-db`, id `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`.
-- Migration 0001 appliquée via API puis enregistrée dans la table Wrangler-compatible `d1_migrations` sous `0001_init.sql`, afin que Wrangler ne la rejoue pas plus tard.
-- Seed distant appliqué 2 fois : second passage = 0 écriture, donc idempotence confirmée.
-- GitHub : source du projet publiée dans `Hamzaoui35/comparateur`; l'historique distant est la source de vérité.
-- Versions directes npm figées ; worker-configuration.d.ts générable par `npm run cf-typegen`.
-- Colonne `group` toujours entre guillemets doubles ; seeds par clés naturelles ; page servie uniquement si `published_at` non NULL.
+- Dépôt GitHub : `Hamzaoui35/comparateur` ; l'historique distant est la source de vérité.
+- Cloudflare Workers Builds : build `npm run build`, deploy `npx wrangler deploy && node scripts/smoke-remote.mjs`.
+- Les changements Markdown racine / docs sont exclus des builds de production.
+- Worker public : `https://comparateur.aymen-for-pic.workers.dev`.
+- D1 : `comparateur-db`, id `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`, région WEUR.
+- Migration `0001_init.sql` appliquée et enregistrée dans `d1_migrations`.
+- Astro 7 + @astrojs/cloudflare 14 utilisent l'entrée unifiée `@astrojs/cloudflare/entrypoints/server`.
+- Le smoke test distant reste dans `scripts/smoke-remote.mjs` et s'exécute après chaque déploiement de production.
 
 ## Vérifications
-- build local initial : OK
-- npm test local : 15/15
-- D1 distante : 16 tables métier + vue `current_offers` (+ tables internes Cloudflare / migrations)
-- seed distant : 2 produits, 3 marchands, 6 offres, 12 snapshots, 2 pages, 7 page_offers
-- seed distant 2e passage : 0 changement
-- `d1_migrations` : 0001_init.sql enregistré
-- page comparative locale : ordre livraison connue → inconnue → rupture, 404 OK
-- preuves A/B/C de généricité : validées en local
+- `npm test` local : 15/15.
+- Build Astro Cloudflare : succès.
+- Worker : déploiement réussi sur workers.dev.
+- D1 distante : 16 tables métier + vue `current_offers`.
+- Seed distant : 2 produits, 3 marchands, 6 offres, 12 snapshots, 2 pages, 7 page_offers.
+- Seed distant exécuté une 2e fois : 0 écriture, donc idempotent.
+- Smoke distant Cloudflare : `accueil=200 comparatif=200 contenu=OK inconnu=404`.
+- Comparatif distant : contient `Produit Test A`, `Livraison à vérifier`, `noindex` et liens `sponsored nofollow`.
+- Preuves A/B/C de généricité : validées.
 
-Dernier commit distant : voir `git log --oneline -1`
+Dernier commit fonctionnel : `37b68ad test: add post-deploy remote smoke checks`
