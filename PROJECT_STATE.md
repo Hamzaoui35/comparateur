@@ -1,41 +1,36 @@
 # PROJECT STATE
-Statut : bloqué (GitHub publié ; reste uniquement Cloudflare distant)
+Statut : bloqué (D1 distant terminé ; reste le déploiement du vrai build Astro)
 Objectif actuel : Phase 1 — fondation
-Dernière étape validée : 10 — preuves de généricité A, B, C (en local)
-En cours : 4, 5, 7 et parties distantes de 8–9 — en attente d'identifiants Cloudflare
+Dernière étape validée : 8 — seed distant rejouable sans doublon
+En cours : 4 et 9 (distant) — déploiement Worker Astro
 Prochaine action exacte :
-  1. Sur un poste connecté à Internet : `npm install` puis `npm run cf-typegen`
-  2. `npx wrangler login`
-  3. `npx wrangler d1 create comparateur-db` → copier le database_id dans wrangler.jsonc
-  4. `npm run db:migrate:remote` puis `npm run db:seed:remote` deux fois
-  5. `npm run deploy` → ouvrir /comparatifs/produit-test-a-meilleur-prix
-  6. vérifier le distant, mettre Statut : terminé, commit/push
+  1. Dans Cloudflare Dashboard, autoriser une fois l'intégration GitHub / Workers Builds pour le dépôt `Hamzaoui35/comparateur`.
+  2. Reprendre avec l'agent : créer/configurer le Worker depuis ce dépôt, build `npm run build`, deploy `npm run deploy`.
+  3. Vérifier l'URL workers.dev et /comparatifs/produit-test-a-meilleur-prix, puis mettre Statut : terminé.
 
 ## Reste à faire
-- Générer package-lock.json avec `npm install` et les types avec `npm run cf-typegen` (le connecteur GitHub n'a pas pu transférer ces 2 gros fichiers générés)
-- 4 déploiement workers.dev · 5 D1 distante · 7 migration distante
-- 8 seed distant (2 passages) · 9 pages de test vérifiées sur workers.dev
+- 4 : déployer le vrai build Astro sur workers.dev
+- 9 (distant) : vérifier page comparative publique + 404
 
 ## Blocages / À faire par Aymen
-- Cloudflare : aucun identifiant dans l'environnement de l'agent. Faire `npx wrangler login` sur ton poste, ou fournir un jeton via variables d'environnement (jamais dans le chat).
+- Cloudflare Workers Builds refuse la connexion API au dépôt tant que l'intégration GitHub Cloudflare n'a pas été autorisée une première fois. D1 et GitHub sont déjà terminés.
 
 ## Décisions prises
-- GitHub : source du projet publiée dans `Hamzaoui35/comparateur` via le connecteur. Le connecteur n'a pas pu préserver les 5 commits locaux originaux ni transférer package-lock.json / worker-configuration.d.ts ; le code source, schéma, migrations, seeds, tests et mémoire projet sont présents. À partir de maintenant, l'historique distant est la source de vérité.
-- Versions directes npm figées dans package.json ; package-lock sera régénéré avec `npm install`. worker-configuration.d.ts est généré par `npm run cf-typegen` et ignoré par Git.
-- Template officiel inaccessible lors de la session initiale : projet monté avec les paquets officiels Astro/Cloudflare.
-- Colonne `group` conservée : toujours entre guillemets doubles.
-- Seeds par clés naturelles, sans id explicite.
-- Une page n'est servie que si `published_at` est renseigné.
-- Tests : node --test + node:sqlite ; npm test utilise --experimental-strip-types.
+- D1 créée via API Cloudflare dans la région WEUR : `comparateur-db`, id `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`.
+- Migration 0001 appliquée via API puis enregistrée dans la table Wrangler-compatible `d1_migrations` sous `0001_init.sql`, afin que Wrangler ne la rejoue pas plus tard.
+- Seed distant appliqué 2 fois : second passage = 0 écriture, donc idempotence confirmée.
+- GitHub : source du projet publiée dans `Hamzaoui35/comparateur`; l'historique distant est la source de vérité.
+- Versions directes npm figées ; worker-configuration.d.ts générable par `npm run cf-typegen`.
+- Colonne `group` toujours entre guillemets doubles ; seeds par clés naturelles ; page servie uniquement si `published_at` non NULL.
 
 ## Vérifications
 - build local initial : OK
-- migration locale : 16 tables + 1 vue ; index partiel page_offers testé
-- seed local 2 fois : aucun doublon
+- npm test local : 15/15
+- D1 distante : 16 tables métier + vue `current_offers` (+ tables internes Cloudflare / migrations)
+- seed distant : 2 produits, 3 marchands, 6 offres, 12 snapshots, 2 pages, 7 page_offers
+- seed distant 2e passage : 0 changement
+- `d1_migrations` : 0001_init.sql enregistré
 - page comparative locale : ordre livraison connue → inconnue → rupture, 404 OK
-- preuve A : nouveau snapshot modifie le prix sans code
-- preuve B : 3e produit ajouté uniquement par données
-- preuve C : test anti-marque en dur
-- npm test : 15/15
+- preuves A/B/C de généricité : validées en local
 
 Dernier commit distant : voir `git log --oneline -1`
