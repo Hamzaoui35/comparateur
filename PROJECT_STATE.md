@@ -1,7 +1,7 @@
 # PROJECT STATE
 Statut : terminé
 Objectif actuel : Audit UX/UI + CRO + marketing + accessibilité + SEO comparateur
-Dernière étape validée : correctifs UX/CRO/a11y fusionnés et déployés, 40 tests et build verts, smoke production complet, captures finales mobile 360/390, tablette 768 et desktop 1440
+Dernière étape validée : correctifs UX/CRO/a11y fusionnés et déployés, 40 tests et build verts, smoke production complet, captures finales mobile 360/390, tablette 768, desktop 1024/1440
 En cours : aucune
 Prochaine action exacte : STOP. Attendre informations légales/contact éditeur, autorisation commerciale d'images et décision explicite avant indexation.
 
@@ -21,8 +21,8 @@ Prochaine action exacte : STOP. Attendre informations légales/contact éditeur,
 - Smoke distant : accueil, comparatif de test, deux produits réels (Dreame 4 offres ; Tineco 6 offres), /go/ 302, mismatch snapshot, 404.
 - Pages à propos, comment ça marche, affiliation, confidentialité, mentions légales, contact : HTTP 200 et noindex.
 - SEO : canonical, WebSite, Product/AggregateOffer, BreadcrumbList, robots.txt, sitemap.xml validés.
-- Visuel réel inspecté sur production : homepage 390 mobile, fiches produit 360 et 768, homepage 1440 desktop.
-- Non mesuré : Core Web Vitals LCP/CLS/INP, WCAG AA exhaustif, tests visuels complets 1024, taux de conversion réel.
+- Visuel réel inspecté sur production : homepage 390 mobile, fiches produit 360, 768 et 1024, homepage 1440 desktop.
+- Non mesuré : Core Web Vitals LCP/CLS/INP, WCAG AA exhaustif, tests manuels clavier/zoom, taux de conversion réel.
 - D1 conservée : 16 offres courantes, product_media = 0 ; aucun changement de migrations.
 - noindex,follow conservé ; /go/, UTM, tracking, classement et historique inchangés.
 
