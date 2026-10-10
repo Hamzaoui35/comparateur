@@ -69,9 +69,10 @@ for (const entry of realProducts) {
   for (const expected of [entry.product.brand, entry.product.model, 'noindex', 'sponsored nofollow', ...sellers]) {
     if (!page.body.includes(expected)) throw new Error(`${slug}: contenu absent: ${expected}`);
   }
-  const hrefs = [...page.body.matchAll(/href="([^"]+)"/g)].map((match) => match[1].replaceAll('&amp;', '&'));
-  if (hrefs.some((href) => /^https?:/i.test(href))) throw new Error(`${slug}: lien marchand direct dans la page`);
-  const goLinks = hrefs.filter((href) => href.startsWith('/go/'));
+  const anchorHrefs = [...page.body.matchAll(/<a\b[^>]*\bhref="([^"]+)"/gi)]
+    .map((match) => match[1].replaceAll('&amp;', '&'));
+  if (anchorHrefs.some((href) => /^https?:/i.test(href))) throw new Error(`${slug}: lien marchand direct dans la page`);
+  const goLinks = anchorHrefs.filter((href) => href.startsWith('/go/'));
   if (new Set(goLinks).size !== entry.offers.length) {
     throw new Error(`${slug}: ${new Set(goLinks).size} offres uniques /go/ pour ${entry.offers.length} offres importées`);
   }
