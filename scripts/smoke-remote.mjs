@@ -65,7 +65,8 @@ for (const entry of realProducts) {
   const slug = entry.page.slug;
   const path = `/comparatifs/${slug}?utm_source=smoke&utm_campaign=phase3&utm_content=remote`;
   const page = await fetchUntil(path, 200, ({ body }) => body.includes(entry.product.model) && body.includes('/go/'));
-  for (const expected of [entry.product.brand, entry.product.model, 'noindex', 'sponsored nofollow']) {
+  const sellers = entry.offers.filter((offer) => offer.seller_name).map((offer) => `vendu par ${offer.seller_name}`);
+  for (const expected of [entry.product.brand, entry.product.model, 'noindex', 'sponsored nofollow', ...sellers]) {
     if (!page.body.includes(expected)) throw new Error(`${slug}: contenu absent: ${expected}`);
   }
   const hrefs = [...page.body.matchAll(/href="([^"]+)"/g)].map((match) => match[1].replaceAll('&amp;', '&'));
