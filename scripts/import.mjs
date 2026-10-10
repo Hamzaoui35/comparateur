@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 export const AVAILABILITY = ['in_stock', 'preorder', 'out_of_stock', 'unknown'];
 export const CONDITIONS = ['new', 'refurbished', 'used'];
 export const AFFILIATION_STATUS = ['A', 'B', 'C'];
+export const MEDIA_ROLES = ['primary', 'gallery'];
+export const MEDIA_RIGHTS = ['owned', 'licensed', 'affiliate_feed', 'manufacturer_permission', 'public_domain'];
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
@@ -126,6 +128,35 @@ export function validateImport(data, { forbidFixtures = true } = {}) {
     if (!isText(p.mpn, { max: 80 })) err(where, 'product.mpn doit être null ou un texte');
     if (!isSafeHttpsUrl(p.manufacturer_url)) err(where, 'product.manufacturer_url doit être une URL https');
 
+    if (entry.media !== undefined && !Array.isArray(entry.media)) err(where, 'media doit être un tableau');
+    const media = Array.isArray(entry.media) ? entry.media : [];
+    const mediaPositions = new Set();
+    let primaryCount = 0;
+    media.forEach((item, i) => {
+      const at = `${where} media[${i}]`;
+      if (!isSafeHttpsUrl(item.url)) err(at, 'url doit être une URL https');
+      if (!isText(item.alt_text, { nullable: false, max: 220 })) err(at, 'alt_text obligatoire');
+      if (!MEDIA_ROLES.includes(item.role)) err(at, `role doit valoir ${MEDIA_ROLES.join('/')}`);
+      if (!Number.isSafeInteger(item.position) || item.position < 1) err(at, 'position doit être un entier >= 1');
+      else if (mediaPositions.has(item.position)) err(at, `position en double (${item.position})`);
+      else mediaPositions.add(item.position);
+      if (item.role === 'primary') {
+        primaryCount++;
+        if (item.position !== 1) err(at, 'le média primary doit avoir position=1');
+      } else if (item.role === 'gallery' && item.position === 1) {
+        err(at, 'position=1 est réservée au média primary');
+      }
+      if (!isSafeHttpsUrl(item.source_url)) err(at, 'source_url doit être une URL https');
+      if (!MEDIA_RIGHTS.includes(item.rights_basis)) {
+        err(at, `rights_basis doit valoir ${MEDIA_RIGHTS.join('/')}`);
+      }
+      if (!isText(item.rights_note, { nullable: false, max: 300 })) err(at, 'rights_note obligatoire');
+      if (typeof item.checked_at !== 'string' || !ISO_UTC.test(item.checked_at)) {
+        err(at, 'checked_at doit être une date UTC ISO 8601');
+      }
+    });
+    if (media.length > 0 && primaryCount !== 1) err(where, 'media doit contenir exactement un primary');
+
     const page = entry.page ?? {};
     if (typeof page.slug !== 'string' || !SLUG.test(page.slug)) err(where, `page.slug invalide (${page.slug})`);
     else if (pageSlugs.has(page.slug)) err(where, `page.slug en double (${page.slug})`);
@@ -221,6 +252,18 @@ export function toSqlStatements(data) {
     );
   }
 
+  for (const { product: p, media = [] } of data.products) {
+    for (const item of media) {
+      statements.push(
+        `INSERT INTO product_media (product_id, url, alt_text, role, position, source_url, rights_basis, rights_note, checked_at) ` +
+          `SELECT p.id, ${v(item.url)}, ${v(item.alt_text)}, ${v(item.role)}, ${v(item.position)}, ${v(item.source_url)}, ` +
+          `${v(item.rights_basis)}, ${v(item.rights_note)}, ${v(item.checked_at)} FROM products AS p WHERE p.slug = ${v(p.slug)} ` +
+          `ON CONFLICT(product_id, role, position) DO UPDATE SET url = excluded.url, alt_text = excluded.alt_text, ` +
+          `source_url = excluded.source_url, rights_basis = excluded.rights_basis, rights_note = excluded.rights_note, checked_at = excluded.checked_at`
+      );
+    }
+  }
+
   for (const { product: p, offers } of data.products) {
     for (const o of offers) {
       // La mise à jour ne s'applique que si l'offre existante pointe vers le même produit et le même marchand.
@@ -297,7 +340,8 @@ function main() {
   }
   const offers = data.products.reduce((n, p) => n + p.offers.length, 0);
   const snapshots = data.batches.reduce((n, b) => n + b.snapshots.length, 0);
-  const summary = `OK : ${data.merchants.length} marchands, ${data.products.length} produits, ${offers} offres, ${snapshots} relevés`;
+  const media = data.products.reduce((n, p) => n + (p.media?.length ?? 0), 0);
+  const summary = `OK : ${data.merchants.length} marchands, ${data.products.length} produits, ${offers} offres, ${snapshots} relevés, ${media} médias`;
   if (args.check) {
     console.log(summary);
     return;
