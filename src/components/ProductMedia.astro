@@ -1,0 +1,24 @@
+---
+import type { ProductMedia as ProductMediaRow } from '../lib/comparison';
+interface Props {
+  media: readonly ProductMediaRow[];
+  compact?: boolean;
+}
+const { media, compact = false } = Astro.props;
+const visible = [...media].sort((a, b) => a.position - b.position);
+---
+{visible.length > 0 && (
+  <div class:list={['product-media', { 'product-media--compact': compact }]} aria-label="Photos du produit">
+    {visible.map((item, index) => (
+      <figure class:list={['product-media-item', { 'product-media-item--primary': index === 0 }]}>
+        <img
+          src={item.url}
+          alt={item.alt_text}
+          loading={index === 0 ? 'eager' : 'lazy'}
+          fetchpriority={index === 0 ? 'high' : 'auto'}
+          decoding="async"
+        />
+      </figure>
+    ))}
+  </div>
+)}
