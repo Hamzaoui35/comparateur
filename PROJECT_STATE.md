@@ -1,36 +1,38 @@
 # PROJECT STATE
-Statut : terminé
-Objectif actuel : Phase 1 — fondation
-Dernière étape validée : 10 — preuves de généricité + validation distante
-En cours : aucune
-Prochaine action exacte : STOP. Ne pas commencer la phase 2 sans instruction explicite d'Aymen.
+Statut : en cours
+Objectif actuel : Phase 2 — tracking serveur vues + clics sortants
+Dernière étape validée : Phase 1 complète en production
+En cours : 1 — couche tracking générique + tests
+Prochaine action exacte : implémenter helpers tracking, vue SSR, route /go, liens internes puis tests/smoke distant.
 
-## Reste à faire
-- Aucun élément bloquant pour la phase 1.
-- Optionnel : ajouter un lockfile au dépôt pour activer le cache de dépendances Cloudflare Builds.
+## Critères de fin Phase 2
+- Une visite GET normale sur un comparatif publié ajoute une ligne `views`.
+- HEAD/prefetch/prerender ne compte pas comme vue.
+- Source + utm_campaign + utm_content sont capturés sans cookie/IP/visitor id.
+- `internal_test` et `bot_suspected` sont calculés sans stocker le User-Agent brut.
+- Tous les boutons marchands passent par `/go/<page_offer_id>?s=<snapshot_id>`.
+- /go génère un `tracking_token` opaque alphanumérique <=20 caractères, ajoute `clicks`, puis redirige.
+- Snapshot correct → offer_snapshot_id enregistré ; snapshot absent/mismatch → NULL mais redirection conservée.
+- page_offer inexistant → 404 ; destination non HTTP(S) → refus.
+- Échec de tracking ne bloque jamais un clic marchand valide.
+- Tests automatiques + build Cloudflare + smoke distant réussissent.
+- D1 distante vérifiée : lignes vues/clics de smoke marquées `internal_test=1`.
+- STOP : pas de Trend Detector, score, SEO, import de vrais produits ou intégration réseau dans cette phase.
 
 ## Blocages / À faire par Aymen
 - Aucun.
 
 ## Décisions prises
-- Dépôt GitHub : `Hamzaoui35/comparateur` ; l'historique distant est la source de vérité.
-- Cloudflare Workers Builds : build `npm run build`, deploy `npx wrangler deploy && node scripts/smoke-remote.mjs`.
-- Les changements Markdown racine / docs sont exclus des builds de production.
-- Worker public : `https://comparateur.aymen-for-pic.workers.dev`.
-- D1 : `comparateur-db`, id `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`, région WEUR.
-- Migration `0001_init.sql` appliquée et enregistrée dans `d1_migrations`.
-- Astro 7 + @astrojs/cloudflare 14 utilisent l'entrée unifiée `@astrojs/cloudflare/entrypoints/server`.
-- Le smoke test distant reste dans `scripts/smoke-remote.mjs` et s'exécute après chaque déploiement de production.
+- Phase 2 réutilise le schéma 0001 : aucune migration supplémentaire nécessaire.
+- `source` vue = utm_source sinon `direct`; source clic = utm_source sinon `site`.
+- Tests internes automatisés utilisent l'en-tête `x-comparateur-internal-test: 1`.
+- Détection bot par heuristique transitoire sur User-Agent ; seul le booléen est persisté.
+- Tracking réseau/sub-ID spécifique à chaque plateforme d'affiliation est reporté à l'intégration du réseau ; le token est déjà prêt côté base.
 
-## Vérifications
-- `npm test` local : 15/15.
-- Build Astro Cloudflare : succès.
-- Worker : déploiement réussi sur workers.dev.
-- D1 distante : 16 tables métier + vue `current_offers`.
-- Seed distant : 2 produits, 3 marchands, 6 offres, 12 snapshots, 2 pages, 7 page_offers.
-- Seed distant exécuté une 2e fois : 0 écriture, donc idempotent.
-- Smoke distant Cloudflare : `accueil=200 comparatif=200 contenu=OK inconnu=404`.
-- Comparatif distant : contient `Produit Test A`, `Livraison à vérifier`, `noindex` et liens `sponsored nofollow`.
-- Preuves A/B/C de généricité : validées.
+## Vérifications Phase 1 conservées
+- npm test : 15/15 ; build Astro + Worker workers.dev : OK.
+- D1 : 16 tables métier + current_offers ; seed distant idempotent.
+- Smoke phase 1 : accueil=200, comparatif=200, contenu=OK, inconnu=404.
 
-Dernier commit fonctionnel : `37b68ad test: add post-deploy remote smoke checks`
+Worker : `https://comparateur.aymen-for-pic.workers.dev`
+D1 : `comparateur-db` / `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`
