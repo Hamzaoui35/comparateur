@@ -221,3 +221,15 @@
     .comparison-hero { gap: 16px; padding-bottom: 24px; }
   }
 }
+
+
+/* Desktop : faire apparaître les produits plus tôt sans sacrifier la hiérarchie du hero. */
+@layer responsive {
+  @media (min-width: 801px) {
+    .home-hero { padding-block: 48px 34px; }
+    .home-hero .eyebrow { margin-bottom: 16px; }
+    .hero-lead { margin-top: 16px; }
+    .hero-actions { margin-top: 24px; }
+    .catalog-section { padding-top: 32px; }
+  }
+}
