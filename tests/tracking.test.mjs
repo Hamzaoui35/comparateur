@@ -43,11 +43,11 @@ test('vues : GET normal compté, HEAD/prefetch/prerender ignorés', () => {
   assert.equal(shouldCountView(new Request('https://site.example/p', { headers: { 'sec-purpose': 'prefetch;prerender' } })), false);
 });
 
-test('tracking_token : 18 caractères alphanumériques et pratiquement uniques', () => {
+test('tracking_token : 18 caractères minuscules/chiffres et pratiquement uniques', () => {
   const tokens = new Set(Array.from({ length: 200 }, () => generateTrackingToken()));
   assert.equal(tokens.size, 200);
   for (const token of tokens) {
-    assert.match(token, /^[A-Za-z0-9]{18}$/);
+    assert.match(token, /^[a-z0-9]{18}$/);
   }
 });
 
