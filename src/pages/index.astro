@@ -6,6 +6,8 @@ import { getPublishedComparisons, getActiveOffers } from '../lib/comparison';
 import { rankOffers, totalCents } from '../lib/ranking';
 import { formatCents, formatDate } from '../lib/format';
 import { sanitizeTrackingValue } from '../lib/tracking';
+import { websiteJsonLd } from '../lib/seo';
+import { absoluteSiteUrl } from '../lib/site';
 export const prerender = false;
 let unavailable = false;
 let cards: { page: Awaited<ReturnType<typeof getPublishedComparisons>>[number]; offers: Awaited<ReturnType<typeof getActiveOffers>> }[] = [];
@@ -21,7 +23,12 @@ for (const key of ['utm_source', 'utm_campaign', 'utm_content']) {
 }
 const href = (slug: string) => `/comparatifs/${encodeURIComponent(slug)}${params.size ? `?${params}` : ''}`;
 ---
-<Base title="Comparateur — les offres en clair" description="Comparez les offres marchandes : prix total, livraison, disponibilité et vendeur. Des relevés datés et un classement expliqué.">
+<Base
+  title="Comparateur — les offres en clair"
+  description="Comparez les offres marchandes : prix total, livraison, disponibilité et vendeur. Des relevés datés et un classement expliqué."
+  canonicalPath="/"
+  structuredData={websiteJsonLd(absoluteSiteUrl('/'))}
+>
   <main id="contenu">
     <div class="container">
       <section class="home-hero" aria-labelledby="hero-title">
@@ -46,7 +53,8 @@ const href = (slug: string) => `/comparatifs/${encodeURIComponent(slug)}${params
           const first = offers[0];
           const best = first?.availability === 'in_stock' ? first : null;
           const latest = offers.map(o => o.checked_at).sort().at(-1);
-          return <article class="product-card">
+          return <article class:list={['product-card', { 'product-card--with-media': Boolean(page.image_url) }]}>
+            {page.image_url && <a class="card-media" href={href(page.slug)} aria-label={`Voir le comparatif ${page.brand} ${page.model}`}><img src={page.image_url} alt={page.image_alt ?? `${page.brand} ${page.model}`} loading="lazy" decoding="async" /></a>}
             <div class="card-topline"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif'}</span><span class="card-index" aria-hidden="true">{String(index + 1).padStart(2,'0')}</span></div>
             <span class="eyebrow">{page.brand}</span><h3>{page.model}</h3>
             <div class="card-bottom"><div>
