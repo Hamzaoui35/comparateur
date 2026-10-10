@@ -1,5 +1,5 @@
 const UTM_MAX_LENGTH = 100;
-const TOKEN_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const TOKEN_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 export const INTERNAL_TEST_HEADER = 'x-comparateur-internal-test';
 
 export interface TrackingContext {
@@ -69,8 +69,9 @@ export function generateTrackingToken(length = 18): string {
     const bytes = new Uint8Array(32);
     crypto.getRandomValues(bytes);
     for (const byte of bytes) {
-      // 248 = floor(256 / 62) * 62: rejection avoids modulo bias.
-      if (byte >= 248) continue;
+      // 252 = floor(256 / 36) * 36: rejection avoids modulo bias.
+      // Lowercase + digits keeps the token compatible with affiliate-network constraints such as Awin ClickRef.
+      if (byte >= 252) continue;
       token += TOKEN_ALPHABET[byte % TOKEN_ALPHABET.length];
       if (token.length === length) break;
     }
