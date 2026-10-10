@@ -1,38 +1,39 @@
 # PROJECT STATE
-Statut : en cours
+Statut : terminé
 Objectif actuel : Phase 2 — tracking serveur vues + clics sortants
-Dernière étape validée : Phase 1 complète en production
-En cours : 1 — couche tracking générique + tests
-Prochaine action exacte : implémenter helpers tracking, vue SSR, route /go, liens internes puis tests/smoke distant.
+Dernière étape validée : validation distante D1 + smoke après déploiement
+En cours : aucune
+Prochaine action exacte : STOP. Ne pas commencer la phase suivante sans instruction explicite d'Aymen.
 
-## Critères de fin Phase 2
-- Une visite GET normale sur un comparatif publié ajoute une ligne `views`.
-- HEAD/prefetch/prerender ne compte pas comme vue.
-- Source + utm_campaign + utm_content sont capturés sans cookie/IP/visitor id.
-- `internal_test` et `bot_suspected` sont calculés sans stocker le User-Agent brut.
-- Tous les boutons marchands passent par `/go/<page_offer_id>?s=<snapshot_id>`.
-- /go génère un `tracking_token` opaque alphanumérique <=20 caractères, ajoute `clicks`, puis redirige.
-- Snapshot correct → offer_snapshot_id enregistré ; snapshot absent/mismatch → NULL mais redirection conservée.
-- page_offer inexistant → 404 ; destination non HTTP(S) → refus.
-- Échec de tracking ne bloque jamais un clic marchand valide.
-- Tests automatiques + build Cloudflare + smoke distant réussissent.
-- D1 distante vérifiée : lignes vues/clics de smoke marquées `internal_test=1`.
-- STOP : pas de Trend Detector, score, SEO, import de vrais produits ou intégration réseau dans cette phase.
+## Phase 2 livrée
+- Vue comparative : tracking serveur dans `views`.
+- HEAD/prefetch/prerender ignorés.
+- UTM : source/campaign/content ; aucune IP, cookie, visitor id ou User-Agent brut stocké.
+- `internal_test` via `x-comparateur-internal-test: 1`; `bot_suspected` calculé en mémoire.
+- Tous les liens marchands passent par `/go/<page_offer_id>?s=<snapshot_id>`.
+- Tokens opaques alphanumériques de 18 caractères.
+- Snapshot appartenant à l'offre → conservé ; absent/mismatch → NULL sans bloquer la redirection.
+- page_offer inconnu → 404 ; destination hors HTTP(S) → refus.
+- Une panne d'écriture tracking ne doit pas bloquer un clic vers une destination valide.
+- Pipeline Cloudflare : `npm test && npm run build`, puis deploy + smoke distant.
+
+## Vérifications
+- Tests : 22/22, 0 échec.
+- Build Astro + déploiement Worker : succès.
+- Smoke : accueil=200, comparatif=200, /go=302, mismatch=302, go inconnu=404, page inconnue=404.
+- D1 vue smoke : source=smoke, campaign=phase2, content=remote, internal_test=1, bot_suspected=0.
+- D1 clic valide : token 18 chars, page_offer_id=2, offer_snapshot_id=2, affiliate_active=1.
+- D1 clic mismatch : token 18 chars, même page_offer, offer_snapshot_id=NULL, redirection conservée.
+- Worker version validée : `ba0d61c8-efd8-4718-ab93-5443a98eeec1`.
 
 ## Blocages / À faire par Aymen
 - Aucun.
 
-## Décisions prises
-- Phase 2 réutilise le schéma 0001 : aucune migration supplémentaire nécessaire.
-- `source` vue = utm_source sinon `direct`; source clic = utm_source sinon `site`.
-- Tests internes automatisés utilisent l'en-tête `x-comparateur-internal-test: 1`.
-- Détection bot par heuristique transitoire sur User-Agent ; seul le booléen est persisté.
-- Tracking réseau/sub-ID spécifique à chaque plateforme d'affiliation est reporté à l'intégration du réseau ; le token est déjà prêt côté base.
-
-## Vérifications Phase 1 conservées
-- npm test : 15/15 ; build Astro + Worker workers.dev : OK.
-- D1 : 16 tables métier + current_offers ; seed distant idempotent.
-- Smoke phase 1 : accueil=200, comparatif=200, contenu=OK, inconnu=404.
+## Hors Phase 2
+- Pas encore de vrais produits/marchands.
+- Pas encore d'intégration réseau affilié ni propagation d'un sub-ID spécifique au réseau.
+- Pas de sales import, agrégats, Performance Score, Trend Detector, SEO ou publication automatique.
 
 Worker : `https://comparateur.aymen-for-pic.workers.dev`
 D1 : `comparateur-db` / `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`
+Dernier commit fonctionnel : `844941dd phase2: tolerate Workers rollout in smoke test`
