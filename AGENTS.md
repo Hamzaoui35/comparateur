@@ -56,8 +56,16 @@ Choix ambigu : option la plus simple compatible avec ces règles, une ligne dans
 Pas de narration ni d'explication de code. Jamais de fichier entier dans les réponses. Lectures ciblées. Installations silencieuses, logs coupés (`| tail -n 30`).
 Messages utilisateur : étape importante terminée, blocage nécessitant une action, rapport final.
 
+## Phase 2 lancée — règles tracking
+- Vues : serveur uniquement, jamais JS ; ignorer HEAD/prefetch/prerender.
+- /go : enregistrer le clic puis rediriger ; un échec de tracking ne doit jamais bloquer une destination marchande valide.
+- Snapshot : s'il appartient à l'offre, le conserver ; sinon enregistrer NULL et rediriger quand même.
+- tracking_token : opaque, alphanumérique, unique, <=20 caractères ; ne jamais exposer la PK SQL.
+- UTM autorisés : utm_source, utm_campaign, utm_content ; valeurs bornées/sanitisées.
+- internal_test via en-tête de test ; bot_suspected peut inspecter le User-Agent en mémoire mais ne jamais le persister brut.
+
 ## Hors périmètre tant qu'Aymen ne l'a pas lancé
-Trend detector, agrégats réels, /go/ et tracking, e-mails, comptes utilisateurs, admin, IA de rédaction, publication automatique, multi-sites, publicité, intégration marchands automatique, scraping, SEO avancé, design final.
+Trend detector, agrégats réels, scores, e-mails, comptes utilisateurs, admin, IA de rédaction, publication automatique, multi-sites, publicité, intégration marchands/réseaux automatique, scraping, SEO avancé, design final, import de vrais produits.
 
 ## Commandes
 - `npm run build` · `npm run dev` · `npm run preview` · `npm test`
