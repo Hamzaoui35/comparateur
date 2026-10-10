@@ -1,11 +1,11 @@
-// Vérifie la migration 0001 : 16 tables + 1 vue, historisation de page_offers, unicité des signaux par jour, current_offers.
+// Vérifie le schéma courant : tables métier + médias produit + current_offers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshDb } from './helpers.mjs';
 
 const EXPECTED_TABLES = [
   'clicks', 'fact_product_daily', 'job_runs', 'merchants', 'offer_snapshots', 'offers',
-  'page_offers', 'pages', 'product_reviews', 'product_specs', 'products', 'sales',
+  'page_offers', 'pages', 'product_media', 'product_reviews', 'product_specs', 'products', 'sales',
   'signals', 'trend_candidates', 'views', 'watch_terms',
 ];
 
@@ -21,7 +21,7 @@ function baseRows(db) {
   `);
 }
 
-test('16 tables + la vue current_offers', () => {
+test('17 tables + la vue current_offers', () => {
   const db = freshDb();
   const rows = db.prepare(
     "SELECT name, type FROM sqlite_schema WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY name",
@@ -98,4 +98,31 @@ test('current_offers : dernier relevé, égalité de date départagée par id', 
   assert.equal(row.snapshot_id, 3);
   assert.equal(row.price_cents, 24000);
   assert.equal(row.shipping_cents, null);
+});
+
+
+test('product_media : droits explicites, position unique et primary en rôle valide', () => {
+  const db = freshDb();
+  baseRows(db);
+  db.exec(`
+    INSERT INTO product_media
+      (product_id, url, alt_text, role, position, source_url, rights_basis, rights_note, checked_at)
+    VALUES
+      (1, 'https://cdn.example/p.webp', 'Produit', 'primary', 1, 'https://licence.example/p',
+       'licensed', 'Licence commerciale de test', '2026-10-10T00:00:00Z');
+  `);
+  assert.throws(() => db.exec(`
+    INSERT INTO product_media
+      (product_id, url, alt_text, role, position, source_url, rights_basis, rights_note, checked_at)
+    VALUES
+      (1, 'https://cdn.example/p2.webp', 'Produit 2', 'primary', 1, 'https://licence.example/p2',
+       'licensed', 'Licence commerciale de test', '2026-10-10T00:00:00Z');
+  `), /UNIQUE/);
+  assert.throws(() => db.exec(`
+    INSERT INTO product_media
+      (product_id, url, alt_text, role, position, source_url, rights_basis, rights_note, checked_at)
+    VALUES
+      (1, 'https://cdn.example/p3.webp', 'Produit 3', 'gallery', 2, 'https://licence.example/p3',
+       'unknown', 'Pas de droit', '2026-10-10T00:00:00Z');
+  `), /CHECK/);
 });
