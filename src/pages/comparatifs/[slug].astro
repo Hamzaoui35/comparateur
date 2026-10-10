@@ -1,112 +1,46 @@
 ---
-// Page comparative générique : tout le contenu vient de D1 (aucun produit, marque ou marchand dans le code).
 import { env } from 'cloudflare:workers';
 import Base from '../../layouts/Base.astro';
-import { getActiveOffers, getPublishedPage, groupByProduct } from '../../lib/comparison';
-import { rankGroup, rankOffers, totalCents } from '../../lib/ranking';
-import { availabilityLabel, formatCents, formatDate, shippingLabel } from '../../lib/format';
+import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
+import OfferCard from '../../components/OfferCard.astro';
+import PriceBlock from '../../components/PriceBlock.astro';
+import { getActiveOffers, getPublishedPage, groupByProduct, type ProductGroup, type ComparisonPage } from '../../lib/comparison';
+import { rankGroup, rankOffers } from '../../lib/ranking';
+import { formatDateTime } from '../../lib/format';
 import { makeGoHref, recordPageView } from '../../lib/tracking';
-
 export const prerender = false;
-
-const slug = Astro.params.slug ?? '';
-const page = await getPublishedPage(env.DB, slug);
-
-if (!page) {
-  return new Response('Page introuvable', {
-    status: 404,
-    headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' },
-  });
-}
-
-await recordPageView(env.DB, page.id, Astro.request);
-
-const groups = groupByProduct(await getActiveOffers(env.DB, page.id)).map((group) => ({
-  ...group,
-  offers: rankOffers(group.offers),
-}));
-const main = groups.find((g) => g.product_id === page.main_product_id) ?? groups[0];
-const productName = main ? `${main.brand} ${main.model}` : '';
-const title = !main
-  ? 'Comparatif'
-  : page.template === 'meilleur-prix'
-    ? `Où acheter ${productName} au meilleur prix ?`
-    : `${productName} : comparatif des offres`;
+let page: ComparisonPage | null = null;
+let groups: ProductGroup[] = [];
+let unavailable = false;
+try {
+  page = await getPublishedPage(env.DB, Astro.params.slug ?? '');
+  if (page) {
+    await recordPageView(env.DB, page.id, Astro.request);
+    groups = groupByProduct(await getActiveOffers(env.DB, page.id)).map(group => ({ ...group, offers: rankOffers(group.offers) }));
+  }
+} catch { unavailable = true; }
+Astro.response.status = unavailable ? 503 : page ? 200 : 404;
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+Astro.response.headers.set('Cache-Control', 'no-store');
+const main = groups.find(g => g.product_id === page?.main_product_id) ?? groups[0];
+const brand = page?.brand ?? main?.brand ?? '';
+const model = page?.model ?? main?.model ?? 'Comparatif';
+const productName = `${brand} ${model}`.trim();
+const best = main?.offers[0];
+const latest = main?.offers.map(o => o.checked_at).sort().at(-1);
+const title = unavailable ? 'Comparatif temporairement indisponible' : !page ? 'Page introuvable' : `${productName} : prix, livraison et offres comparés`;
 ---
 <Base title={title}>
-  <main>
-    <h1>{title}</h1>
-
-    {groups.length === 0 && <p>Aucune offre disponible pour le moment.</p>}
-
-    {groups.map((group) => {
-      const best = group.offers[0];
-      return (
-        <section>
-          {groups.length > 1 && <h2>{group.brand} {group.model}</h2>}
-
-          {best && rankGroup(best) <= 2 && (
-            <p class="best">
-              Meilleure offre disponible : <strong>{formatCents(totalCents(best) ?? best.price_cents)}</strong>
-              {best.shipping_cents === null && <span> + livraison à vérifier</span>} chez {best.merchant_name}{best.seller_name && <span> (vendu par {best.seller_name})</span>}.
-            </p>
-          )}
-
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Marchand</th>
-                <th scope="col">Prix</th>
-                <th scope="col">Livraison</th>
-                <th scope="col">Total</th>
-                <th scope="col">Disponibilité</th>
-                <th scope="col">Relevé le</th>
-                <th scope="col"><span class="sr-only">Lien</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {group.offers.map((offer) => {
-                const total = totalCents(offer);
-                return (
-                  <tr data-snapshot-id={offer.snapshot_id} data-page-offer-id={offer.page_offer_id}>
-                    <td>
-                      {offer.merchant_name}
-                      {offer.seller_name && <small class="seller"><br />vendu par {offer.seller_name}</small>}
-                      {offer.is_recommended === 1 && <span class="badge"> Recommandé</span>}
-                    </td>
-                    <td>{formatCents(offer.price_cents)}</td>
-                    <td>{shippingLabel(offer.shipping_cents)}</td>
-                    <td>{total === null ? '—' : formatCents(total)}</td>
-                    <td>
-                      {availabilityLabel(offer.availability)}
-                      {offer.delivery_info && <small> · {offer.delivery_info}</small>}
-                    </td>
-                    <td>{formatDate(offer.checked_at)}</td>
-                    <td>
-                      <a href={makeGoHref(offer.page_offer_id, offer.snapshot_id, Astro.url.searchParams)} rel="sponsored nofollow">Voir l'offre</a>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      );
-    })}
-
-    <p class="note">
-      Prix relevés à la date indiquée ; ils peuvent avoir changé depuis. Certains liens sont affiliés : nous pouvons
-      percevoir une commission, sans surcoût pour vous. Le classement ne dépend jamais de la commission.
-    </p>
+  <main id="contenu" class="container">
+    {unavailable || !page ? <section class="error-page"><span class="eyebrow">{unavailable ? 'Une interruption temporaire' : 'Page introuvable · 404'}</span><h1>{unavailable ? 'Les offres sont momentanément indisponibles.' : 'Cette page ne se trouve pas ici.'}</h1><p>{unavailable ? 'Réessayez dans quelques instants. Aucun prix ne peut être confirmé pour le moment.' : 'L’adresse est peut-être incomplète. Retrouvez les comparatifs disponibles depuis l’accueil.'}</p><a class="button button-primary" href="/">Revenir aux comparatifs <span aria-hidden="true">→</span></a></section> : <>
+      <nav class="breadcrumb" aria-label="Fil d’Ariane"><a href="/">Accueil</a><span aria-hidden="true">/</span><a href="/#comparatifs">Comparatifs</a><span aria-hidden="true">/</span><span aria-current="page">{productName}</span></nav>
+      <section class="comparison-hero" aria-labelledby="product-title">
+        <div class="product-heading"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif des offres'}</span><span class="eyebrow">{brand}</span><h1 id="product-title">{model}</h1><p>Où l’acheter ? Comparez les prix, la livraison et les vendeurs pour ce même modèle.</p><div class="product-meta"><span>{main?.offers.length ?? 0} offre{main?.offers.length !== 1 ? 's' : ''} comparée{main?.offers.length !== 1 ? 's' : ''}</span>{latest && <span>Dernier relevé : <time datetime={latest}>{formatDateTime(latest)}</time> (Paris)</span>}</div></div>
+        {best && rankGroup(best) <= 2 ? <aside class="best-offer" aria-label="Première offre en stock du classement"><span class="eyebrow">Meilleure offre disponible du classement</span><PriceBlock offer={best} large /><p class="best-merchant">chez <strong>{best.merchant_name}</strong></p>{best.seller_name ? <p class="seller">Marketplace · vendu par {best.seller_name}</p> : <p class="seller">Vendeur non précisé dans le relevé</p>}<a class="button button-light" href={makeGoHref(best.page_offer_id, best.snapshot_id, Astro.url.searchParams)} rel="sponsored nofollow" aria-label={`Voir l’offre en tête du classement chez ${best.merchant_name}`}>Voir chez {best.merchant_name} <span aria-hidden="true">↗</span></a><p class="checked">En stock au relevé du <time datetime={best.checked_at}>{formatDateTime(best.checked_at)}</time> (Paris).</p><p class="best-explainer">Parmi les offres comparées, selon la disponibilité et les frais connus. <a href="/comment-ca-marche#classement">Voir la règle de classement</a>.</p></aside> : <aside class="info-box"><h2>{!best ? 'Pas encore d’offre actuelle' : main?.offers.every(o => o.availability === 'out_of_stock') ? 'Aucune offre en stock au relevé' : 'Disponibilité à confirmer'}</h2><p>{!best ? 'Ce produit reste référencé. Les offres apparaîtront ici dès qu’un relevé sera disponible.' : 'Les offres ci-dessous sont en précommande, indisponibles ou à vérifier. Aucun achat disponible immédiatement ne peut être confirmé.'}</p></aside>}
+      </section>
+      {groups.length === 0 && <div class="empty-state"><h2>Aucune offre disponible pour le moment.</h2><p>Revenez consulter cette page pour un prochain relevé.</p></div>}
+      {groups.map((group, groupIndex) => <section class="offers-section" aria-labelledby={`offers-title-${groupIndex}`}><div class="section-heading"><div><span class="eyebrow">Même produit, plusieurs marchands</span><h2 id={`offers-title-${groupIndex}`}>{groups.length > 1 ? `${group.brand} ${group.model}` : 'Toutes les offres, en détail.'}</h2></div><p class="sorting-note">Le stock d’abord, puis le total avec livraison connue. <a href="/comment-ca-marche#classement">Comprendre le classement</a></p></div><ol class="offers-list">{group.offers.map((offer, index) => <OfferCard offer={offer} index={index} leading={index === 0 && rankGroup(offer) <= 2} sourceParams={Astro.url.searchParams} />)}</ol><p class="price-warning">Prix TTC relevés aux dates indiquées. Prix, stock, délais et conditions peuvent changer : confirmez-les chez le marchand avant l’achat. Le comparatif ne couvre pas nécessairement toutes les offres du marché.</p></section>)}
+      <div class="disclosure-wrap"><AffiliateDisclosure /></div>
+    </>}
   </main>
 </Base>
-
-<style>
-  main { max-width: 60rem; margin: 0 auto; padding: 1rem; font-family: system-ui, sans-serif; }
-  table { width: 100%; border-collapse: collapse; margin: 1rem 0 2rem; }
-  th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; vertical-align: top; }
-  .badge { font-size: 0.8em; font-weight: 600; }
-  .note { font-size: 0.85em; color: #555; }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  @media (max-width: 40rem) { table { display: block; overflow-x: auto; } }
-</style>

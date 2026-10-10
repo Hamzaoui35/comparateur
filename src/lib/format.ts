@@ -2,6 +2,7 @@
 
 const euros = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const longDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' });
+const dateTime = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Paris' });
 
 const AVAILABILITY_LABELS: Record<string, string> = {
   in_stock: 'En stock',
@@ -16,6 +17,10 @@ export function formatCents(cents: number): string {
 
 export function formatDate(isoUtc: string): string {
   return longDate.format(new Date(isoUtc));
+}
+
+export function formatDateTime(isoUtc: string): string {
+  return dateTime.format(new Date(isoUtc));
 }
 
 export function shippingLabel(shippingCents: number | null): string {

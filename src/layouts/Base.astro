@@ -1,8 +1,12 @@
 ---
 interface Props {
   title: string;
+  description?: string;
 }
-const { title } = Astro.props;
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+const { title, description = 'Comparez les prix, la livraison, la disponibilité et les vendeurs. Des offres datées pour choisir en connaissance de cause.' } = Astro.props;
 ---
 <!doctype html>
 <html lang="fr">
@@ -10,9 +14,15 @@ const { title } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#173e35" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
   </head>
   <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
     <slot />
+    <Footer />
   </body>
 </html>

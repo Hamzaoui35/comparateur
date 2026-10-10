@@ -1,8 +1,73 @@
 ---
+import { env } from 'cloudflare:workers';
 import Base from '../layouts/Base.astro';
-export const prerender = true;
+import AffiliateDisclosure from '../components/AffiliateDisclosure.astro';
+import { getPublishedComparisons, getActiveOffers } from '../lib/comparison';
+import { rankOffers, totalCents } from '../lib/ranking';
+import { formatCents, formatDate } from '../lib/format';
+import { sanitizeTrackingValue } from '../lib/tracking';
+export const prerender = false;
+let unavailable = false;
+let cards: { page: Awaited<ReturnType<typeof getPublishedComparisons>>[number]; offers: Awaited<ReturnType<typeof getActiveOffers>> }[] = [];
+try {
+  const pages = await getPublishedComparisons(env.DB);
+  cards = await Promise.all(pages.map(async (page) => ({page, offers: rankOffers((await getActiveOffers(env.DB, page.id)).filter(o => o.product_id === page.main_product_id))})));
+} catch { unavailable = true; Astro.response.status = 503; }
+Astro.response.headers.set('Cache-Control', 'no-store');
+const params = new URLSearchParams();
+for (const key of ['utm_source', 'utm_campaign', 'utm_content']) {
+  const value = sanitizeTrackingValue(Astro.url.searchParams.get(key));
+  if (value) params.set(key, value);
+}
+const href = (slug: string) => `/comparatifs/${encodeURIComponent(slug)}${params.size ? `?${params}` : ''}`;
 ---
-<Base title="Comparateur">
-  <h1>Comparateur</h1>
-  <p>Fondation technique — phase 1.</p>
+<Base title="Comparateur — les offres en clair" description="Comparez les offres marchandes : prix total, livraison, disponibilité et vendeur. Des relevés datés et un classement expliqué.">
+  <main id="contenu">
+    <div class="container">
+      <section class="home-hero" aria-labelledby="hero-title">
+        <div>
+          <span class="eyebrow">Le bon choix commence par des faits</span>
+          <h1 id="hero-title">Les offres en clair.<span class="serif">Le choix vous appartient.</span></h1>
+          <p class="hero-lead">Prix, livraison, disponibilité, vendeur : comparez les informations qui comptent, avant de choisir où acheter.</p>
+          <div class="hero-actions"><a class="button button-primary" href="#comparatifs">Voir les comparatifs <span aria-hidden="true">↓</span></a><a class="text-link" href="/comment-ca-marche">Notre méthode</a></div>
+        </div>
+        <aside class="hero-guide" aria-label="Les informations pour décider">
+          <p class="guide-intro">UN ACHAT. TROIS REPÈRES.</p>
+          <div class="guide-item"><span class="guide-number" aria-hidden="true">01</span><div><h2>Le prix complet</h2><p>La livraison est incluse dans le total lorsqu’elle est connue.</p></div></div>
+          <div class="guide-item"><span class="guide-number" aria-hidden="true">02</span><div><h2>Le vendeur identifié</h2><p>Une enseigne et un vendeur marketplace sont distingués.</p></div></div>
+          <div class="guide-item"><span class="guide-number" aria-hidden="true">03</span><div><h2>Un relevé daté</h2><p>Vous savez quand chaque offre a été vérifiée.</p></div></div>
+        </aside>
+      </section>
+      <div class="trust-strip"><span><b aria-hidden="true">✓</b> Classement expliqué</span><span><b aria-hidden="true">✓</b> Livraison sans ambiguïté</span><span><b aria-hidden="true">✓</b> Achat chez le marchand</span></div>
+      <section id="comparatifs" class="catalog-section" aria-labelledby="catalog-title">
+        <div class="section-heading"><div><span class="eyebrow">À comparer maintenant</span><h2 id="catalog-title">Trouvez votre prochain achat.</h2></div>{!unavailable && <span class="count-label">{cards.length} comparatif{cards.length !== 1 ? 's' : ''} disponible{cards.length !== 1 ? 's' : ''}</span>}</div>
+        {unavailable ? <div class="empty-state" role="status"><h3>Les offres font une pause.</h3><p>Le catalogue est temporairement indisponible. Réessayez dans quelques instants.</p><a class="button button-secondary" href="/">Réessayer</a></div> : cards.length === 0 ? <div class="empty-state"><h3>Les premiers comparatifs arrivent.</h3><p>Les offres seront présentées ici une fois leurs informations vérifiées.</p></div> :
+        <div class="catalog-grid">{cards.map(({ page, offers }, index) => {
+          const first = offers[0];
+          const best = first?.availability === 'in_stock' ? first : null;
+          const latest = offers.map(o => o.checked_at).sort().at(-1);
+          return <article class="product-card">
+            <div class="card-topline"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif'}</span><span class="card-index" aria-hidden="true">{String(index + 1).padStart(2,'0')}</span></div>
+            <span class="eyebrow">{page.brand}</span><h3>{page.model}</h3>
+            <div class="card-bottom"><div>
+              <span class="card-price-label">{best ? 'Première offre en stock du classement' : 'Disponibilité'}</span>
+              {best ? <><strong class="card-price">{formatCents(totalCents(best) ?? best.price_cents)}</strong><span class="card-detail">{best.shipping_cents === null ? 'Livraison à vérifier · total inconnu' : 'Livraison incluse'}</span></> : <strong>{offers.length ? 'À vérifier chez les marchands' : 'Aucune offre actuelle'}</strong>}
+              <span class="card-detail">{offers.length} offre{offers.length !== 1 ? 's' : ''} comparée{offers.length !== 1 ? 's' : ''}</span>
+            </div><a class="button button-secondary" href={href(page.slug)} aria-label={`Comparer les offres pour ${page.brand} ${page.model}`}>Comparer les offres <span aria-hidden="true">↗</span></a></div>
+            {latest && <p class="card-date">Dernier relevé : <time datetime={latest}>{formatDate(latest)}</time></p>}
+          </article>;
+        })}</div>}
+      </section>
+    </div>
+    <section class="method-section" aria-labelledby="method-title"><div class="container">
+      <div class="method-header"><h2 id="method-title">Moins de flou.<br /><span class="serif">Plus de repères.</span></h2><a class="text-link" href="/comment-ca-marche">Comment nous comparons <span aria-hidden="true">↗</span></a></div>
+      <div class="method-grid">
+        <div class="method-step"><span class="step" aria-hidden="true">01</span><h3>Des offres relevées</h3><p>Les informations affichées par les marchands sont relevées et datées.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">02</span><h3>Le coût visible</h3><p>Prix et livraison sont additionnés lorsqu’un total peut être calculé.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">03</span><h3>Qui vend, précisément</h3><p>Les vendeurs marketplace sont indiqués lorsqu’ils sont identifiés dans le relevé.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">04</span><h3>À vous de choisir</h3><p>Vous consultez les conditions finales et achetez directement chez le marchand.</p></div>
+      </div>
+    </div></section>
+    <div class="container disclosure-wrap"><AffiliateDisclosure /></div>
+  </main>
 </Base>

@@ -1,0 +1,13 @@
+---
+import { formatCents, shippingLabel } from '../lib/format';
+import { totalCents, type RankableOffer } from '../lib/ranking';
+interface Props { offer: RankableOffer; large?: boolean }
+const { offer, large = false } = Astro.props;
+const total = totalCents(offer);
+---
+<div class:list={['price-block', { 'price-block--large': large }]}>
+  <span class="price-caption">{total === null ? 'Prix du produit' : 'Total avec livraison'}</span>
+  <strong class="price">{formatCents(total ?? offer.price_cents)}</strong>
+  <span class="price-detail">{total !== null && offer.shipping_cents !== 0 ? `${formatCents(offer.price_cents)} + ${formatCents(offer.shipping_cents!)} de livraison` : shippingLabel(offer.shipping_cents)}</span>
+  {total === null && <span class="price-detail">Total non calculable à ce stade</span>}
+</div>

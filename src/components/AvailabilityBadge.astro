@@ -1,0 +1,7 @@
+---
+import { availabilityLabel } from '../lib/format';
+import type { Availability } from '../lib/ranking';
+interface Props { availability: Availability }
+const { availability } = Astro.props;
+---
+<span class:list={['availability', `availability--${availability}`]}><span aria-hidden="true" class="status-dot"></span>{availabilityLabel(availability)}</span>

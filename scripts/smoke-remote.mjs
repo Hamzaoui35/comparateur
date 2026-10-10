@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 
-const base = 'https://comparateur.aymen-for-pic.workers.dev';
+const base = process.env.SMOKE_BASE_URL || 'https://comparateur.aymen-for-pic.workers.dev';
 const internalHeaders = {
   'x-comparateur-internal-test': '1',
   'user-agent': 'comparateur-smoke',
@@ -20,8 +20,8 @@ async function fetchUntil(path, expectedStatus, validator = () => true, options 
   throw new Error(`${path}: validation distante échouée après 10 tentatives (HTTP ${last.response.status})`);
 }
 
-const root = await fetchUntil('/', 200, ({ body }) => body.includes('Fondation technique'));
-if (!root.body.includes('Fondation technique')) throw new Error('Accueil: contenu attendu absent');
+const root = await fetchUntil('/', 200, ({ body }) => body.includes('Les offres en clair.'));
+if (!root.body.includes('Les offres en clair.')) throw new Error('Accueil: contenu attendu absent');
 
 const comparisonPath = '/comparatifs/produit-test-a-meilleur-prix?utm_source=smoke&utm_campaign=phase2&utm_content=remote';
 const comparison = await fetchUntil(
@@ -72,8 +72,8 @@ for (const entry of realProducts) {
   const hrefs = [...page.body.matchAll(/href="([^"]+)"/g)].map((match) => match[1].replaceAll('&amp;', '&'));
   if (hrefs.some((href) => /^https?:/i.test(href))) throw new Error(`${slug}: lien marchand direct dans la page`);
   const goLinks = hrefs.filter((href) => href.startsWith('/go/'));
-  if (goLinks.length !== entry.offers.length) {
-    throw new Error(`${slug}: ${goLinks.length} liens /go/ pour ${entry.offers.length} offres importées`);
+  if (new Set(goLinks).size !== entry.offers.length) {
+    throw new Error(`${slug}: ${new Set(goLinks).size} offres uniques /go/ pour ${entry.offers.length} offres importées`);
   }
   if (!goLinks.every((href) => /^\/go\/\d+\?s=\d+&utm_source=smoke&utm_campaign=phase3/.test(href))) {
     throw new Error(`${slug}: lien /go/ sans snapshot ou sans UTM`);
@@ -84,7 +84,7 @@ for (const entry of realProducts) {
   if (location.protocol !== 'https:' || !merchantHosts.includes(location.hostname)) {
     throw new Error(`${slug}: /go/ redirige vers une destination inattendue (${location.hostname})`);
   }
-  console.log(`SMOKE PHASE 3 OK: ${slug} page=200 offres=${goLinks.length} /go=302 → ${location.hostname}`);
+  console.log(`SMOKE PHASE 3 OK: ${slug} page=200 offres=${new Set(goLinks).size} /go=302 → ${location.hostname}`);
 }
 
 // Marqueur de fin : cette vue interne n'existe en D1 que si tous les contrôles précédents ont réussi.
@@ -94,3 +94,17 @@ if (realProducts.length > 0) {
     200,
   );
 }
+
+// Phase 4B : vitrine dynamique et pages publiques.
+for (const entry of realProducts) {
+  if (!root.body.includes(`/comparatifs/${entry.page.slug}`) || !root.body.includes(entry.product.model)) throw new Error('Accueil : produit réel manquant');
+}
+if (root.body.includes('Produit Test')) throw new Error('Accueil : fixture affichée');
+for (const path of ['/', '/a-propos', '/comment-ca-marche', '/affiliation-transparence', '/confidentialite', '/mentions-legales', '/contact']) {
+  const { body } = await fetchUntil(path, 200);
+  if (!body.includes('content="noindex"') || !body.includes('<main') || !body.includes('<footer')) throw new Error(`${path}: structure publique ou noindex absent`);
+}
+const notFound = await fetchUntil('/page-inexistante-phase4b', 404);
+if (!notFound.body.includes('noindex') || !notFound.body.includes('Revenir aux comparatifs')) throw new Error('404 sans interface publique');
+if (!root.body.includes('Certains liens peuvent être affiliés')) throw new Error('Disclosure absente');
+console.log('SMOKE PHASE 4B OK : catalogue réel, 6 pages fixes, 404, disclosure, noindex');

@@ -1,0 +1,15 @@
+---
+const path = Astro.url.pathname;
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="Comparateur — accueil">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      comparateur<span class="brand-dot">.</span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="/#comparatifs" aria-current={path.startsWith('/comparatifs/') ? 'page' : undefined}>Les comparatifs</a>
+      <a href="/comment-ca-marche" aria-current={path === '/comment-ca-marche' ? 'page' : undefined}>Comment ça marche</a>
+    </nav>
+  </div>
+</header>

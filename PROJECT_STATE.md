@@ -2,8 +2,8 @@
 Statut : en cours
 Objectif actuel : Phase 4B — design public et préparation affiliation
 Dernière étape validée : audit du dépôt, D1 et déploiement actuel réussi (244907d).
-En cours : interface publique, composants et pages de confiance.
-Prochaine action exacte : implémenter accueil SSR D1, comparatifs responsive et pages fixes ; tester avant push.
+En cours : validation Cloudflare puis contrôles visuels en production.
+Prochaine action exacte : pousser le design, attendre le build Cloudflare et le smoke, puis vérifier les 5 largeurs.
 
 ## Décisions prises
 - Direction comparateur éditorial : ivoire, bleu nuit, vert profond ; CSS natif, aucune dépendance UI.
@@ -14,7 +14,8 @@ Prochaine action exacte : implémenter accueil SSR D1, comparatifs responsive et
 - GitHub main déclenche le build Cloudflare existant (tests + build + déploiement + smoke).
 
 ## Validation à faire
-- Tests existants + tests catalogue et interface ; npm run build.
+- npm test : 34/34 ; test catalogue ajouté. Build local : compilation OK, pré-rendu bloqué par le proxy local.
+- npm run build et smoke à valider sur le build Cloudflare existant.
 - Vérification visuelle 360/390/768/1024/1440 px ; clavier et états limites.
 - Déploiement comparateur + smoke distant + relecture production.
 

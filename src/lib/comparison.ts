@@ -7,6 +7,9 @@ export interface ComparisonPage {
   slug: string;
   template: string;
   main_product_id: number | null;
+  brand: string | null;
+  model: string | null;
+  category: string | null;
 }
 
 export interface PageOfferRow {
@@ -42,12 +45,31 @@ export interface ProductGroup {
 export async function getPublishedPage(db: D1Database, slug: string): Promise<ComparisonPage | null> {
   return db
     .prepare(
-      `SELECT id, slug, template, main_product_id
-         FROM pages
-        WHERE slug = ?1 AND published_at IS NOT NULL`,
+      `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, p.brand, p.model, p.category
+         FROM pages pg LEFT JOIN products p ON p.id = pg.main_product_id
+        WHERE pg.slug = ?1 AND pg.published_at IS NOT NULL`,
     )
     .bind(slug)
     .first<ComparisonPage>();
+}
+
+/** Vitrine SSR : pages publiées, sans les produits dont les seules preuves sont des seeds.
+ * Un produit publié sans offre reste visible. Aucun catalogue ni nom en dur.
+ */
+export async function getPublishedComparisons(db: D1Database): Promise<ComparisonPage[]> {
+  const { results } = await db.prepare(
+    `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, p.brand, p.model, p.category
+       FROM pages pg JOIN products p ON p.id = pg.main_product_id
+      WHERE pg.published_at IS NOT NULL
+        AND (NOT EXISTS (
+          SELECT 1 FROM offers o JOIN offer_snapshots s ON s.offer_id = o.id WHERE o.product_id = p.id
+        ) OR EXISTS (
+          SELECT 1 FROM offers o JOIN offer_snapshots s ON s.offer_id = o.id
+           WHERE o.product_id = p.id AND s.source <> 'seed'
+        ))
+      ORDER BY pg.published_at DESC, pg.id ASC`,
+  ).all<ComparisonPage>();
+  return results;
 }
 
 /** Offres actives de la page avec leur dernier relevé (offres sans relevé ou désactivées exclues). */

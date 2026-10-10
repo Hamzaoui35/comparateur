@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { repoRoot } from './helpers.mjs';
 
-const FORBIDDEN = [/dreame/i, /tineco/i, /marquetest/i, /produit test/i, /boutique (alpha|beta|gamma)/i, /\.example\b/i];
+const FORBIDDEN = [/\bdarty\b/i, /\bfnac\b/i, /\bcarrefour\b/i, /\bboulanger\b/i, /\bleclerc\b/i, /\balternate\b/i, /dreame/i, /tineco/i, /marquetest/i, /produit test/i, /boutique (alpha|beta|gamma)/i, /\.example\b/i];
 
 function listFiles(dir) {
   return readdirSync(dir).flatMap((name) => {
