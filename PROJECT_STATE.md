@@ -1,45 +1,36 @@
 # PROJECT STATE
-Statut : terminé
-Objectif actuel : Phase 4C — médias produits + préparation SEO Google
-Dernière étape validée : déploiement production + smoke Phase 4C + contrôle D1
-En cours : aucune
-Prochaine action exacte : STOP. Attendre des visuels avec droit commercial explicite et les prérequis de lancement avant retrait de noindex.
+Statut : en cours
+Objectif actuel : Audit UX/UI + CRO + marketing + accessibilité + SEO comparateur
+Dernière étape validée : audit des pages de production et du code ; modifications UX enregistrées sur branche audit-ux-cro-2026-10-11
+En cours : validation tests/build, fusion et déploiement Cloudflare, vérification finale de production
+Prochaine action exacte : contrôler le diff ; fusionner après vérification, contrôler le build Cloudflare et les smoke tests ; vérifier la production avant de déclarer terminé.
 
-## Livré
-- Migration `0002_product_media.sql` appliquée sur D1 : table `product_media` avec provenance et base de droit obligatoire.
-- Import média idempotent ; une image sans droit documenté est refusée.
-- Support UI : image principale + galerie, homepage et comparatif, responsive et sans régression quand aucune image n’existe.
-- SEO : canonical sans UTM, Open Graph/Twitter, JSON-LD `WebSite`, `Product` + `AggregateOffer`, `BreadcrumbList`.
-- GTIN exposé dans les données structurées quand disponible.
-- `/sitemap.xml` dynamique et `/robots.txt` opérationnels.
-- `noindex,follow` conservé : Google ne doit pas encore indexer le site.
-- Aucun lien marchand direct réintroduit ; `/go/` et tracking inchangés.
+## Décisions UX
+- Palette originale vert foncé / crème conservée : lisibilité et caractère sobre appropriés au comparateur.
+- Accueil : message centré sur la comparaison de plusieurs offres d'un même produit.
+- Prix : livraison inconnue annoncée avant et après le prix ; jamais présentée comme gratuite.
+- Comparatifs : marque dans le H1, lien « Voir toutes les offres », boutons marchands nominatifs.
+- Mobile : informations utiles rapprochées du haut, cible clavier/tactile minimum 44 px.
+- Aucun nom de produit ou de marchand ajouté en dur dans src/.
 
-## Vérifications
-- Tests : 40/40, 0 échec.
-- Build Astro : succès.
-- Déploiement Worker : succès.
-- Version validée : `6f721769-0a0f-4d53-94cb-04dc32f1a26a`.
-- Smoke Phase 2 : OK.
-- Smoke Phase 3 : 2 pages réelles + /go : OK.
-- Smoke Phase 4B : homepage, pages fixes, 404, disclosure, noindex : OK.
-- Smoke Phase 4C : canonical, Product/AggregateOffer, Breadcrumb, sitemap, robots : OK.
-- D1 : migrations 0001 + 0002 ; product_media = 0 ; 16 offres courantes inchangées.
-- Builds automatiques GitHub → Cloudflare réactivés.
+## Invariants conservés
+- Astro/TypeScript, Worker, D1 et données existantes ; aucun changement de migration ni de classement.
+- Liens sortants exclusivement via /go/ ; UTM et tracking inchangés.
+- Aucune image sans droit ; table product_media conservée.
+- SEO : canonical, Product/AggregateOffer, Breadcrumb, sitemap et robots conservés ; noindex,follow maintenu.
+- Les pages légales restent provisoires tant que l'éditeur ne fournit pas les éléments requis.
 
-## Médias — blocage externe
-- Aucun visuel produit n’est encore affiché en production.
-- Les conditions publiques de Dreame et Tineco ne permettent pas de considérer leurs images de site comme librement réutilisables commercialement.
-- Sources acceptables : photo appartenant à Aymen, licence commerciale, flux/créatif d’un réseau affilié autorisé, permission fabricant écrite, domaine public.
-- Ne jamais copier une image Google/fabricant/marchand sans droit explicite.
+## Contrôle à terminer
+- npm test et npm run build doivent réussir sur Cloudflare Builds.
+- Smoke distant doit réussir avant tout verdict de déploiement.
+- Vérifier les pages live, les deux comparatifs, /go/, 404, pages fixes, robots.txt, sitemap.xml.
+- Inspecter les rendus mobile et desktop dès que l'accès aux captures n'est plus limité.
 
-## Avant indexation Google
-- Compléter mentions légales / contact / confidentialité avec les vraies informations de l’éditeur.
-- Activer au moins un programme d’affiliation si souhaité pour la monétisation.
-- Ajouter les visuels autorisés lorsqu’ils deviennent disponibles.
-- Décision explicite d’Aymen pour retirer `noindex`.
-- Puis connecter Google Search Console, envoyer le sitemap et demander l’indexation.
+## Bloqueurs extérieurs
+- Images : aucune licence prouvée, product_media = 0, ne rien importer.
+- Identité de l'éditeur, coordonnées publiques, politique confidentialité : à valider avant l'ouverture.
+- Aucun programme d'affiliation actif ; pas de promesse de rémunération.
+- Garder noindex jusqu'à décision explicite.
 
-Worker : `https://comparateur.aymen-for-pic.workers.dev`
-D1 : `comparateur-db` / `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`
-Dernier commit fonctionnel : `d3f3560 phase4c: accept noindex follow directive in smoke`
+Worker : https://comparateur.aymen-for-pic.workers.dev
+D1 : comparateur-db / 60d9a7b4-ef44-464e-9fc7-ebf3a3e71178
