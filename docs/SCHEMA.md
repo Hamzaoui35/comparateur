@@ -70,3 +70,18 @@ views(page_id, viewed_at) · clicks(page_id, clicked_at) · signals(product_id, 
 - shipping_cents NULL = livraison inconnue (jamais gratuite).
 - page_offers historisée : fermer (valid_to) puis insérer, jamais réécrire.
 - Tables RAW en ajout seul, sauf purge imposée par les conditions d'une source.
+
+
+## Tracking runtime — Phase 2
+
+- Les vues comparatives sont écrites côté serveur dans `views`, uniquement pour les requêtes GET normales.
+- `Purpose/Sec-Purpose: prefetch|prerender` et HEAD ne créent pas de vue.
+- `source` vue = `utm_source` sinon `direct`; source clic = `utm_source` sinon `site`.
+- Seuls `utm_source`, `utm_campaign` et `utm_content` sont propagés vers `/go`.
+- `internal_test` est activé par l'en-tête `x-comparateur-internal-test: 1`; le smoke distant l'utilise pour ne pas polluer les métriques réelles.
+- `bot_suspected` peut inspecter le User-Agent en mémoire, mais le User-Agent brut n'est jamais persisté.
+- Route sortante : `/go/<page_offer_id>?s=<snapshot_id>`.
+- Un snapshot n'est conservé dans `clicks.offer_snapshot_id` que s'il appartient à l'offre du `page_offer`. Sinon la valeur est NULL et la redirection continue.
+- `tracking_token` : 18 caractères alphanumériques, opaque, unique ; la PK SQL n'est jamais exposée.
+- Une erreur d'écriture du clic ne bloque pas une destination marchande HTTP(S) valide.
+- L'attribution spécifique des réseaux affiliés (sub-ID/clickref/etc.) est volontairement différée à l'intégration de chaque réseau.
