@@ -1,36 +1,37 @@
 # PROJECT STATE
-Statut : en cours
+Statut : terminé
 Objectif actuel : Audit UX/UI + CRO + marketing + accessibilité + SEO comparateur
-Dernière étape validée : audit des pages de production et du code ; modifications UX enregistrées sur branche audit-ux-cro-2026-10-11
-En cours : validation tests/build, fusion et déploiement Cloudflare, vérification finale de production
-Prochaine action exacte : contrôler le diff ; fusionner après vérification, contrôler le build Cloudflare et les smoke tests ; vérifier la production avant de déclarer terminé.
+Dernière étape validée : correctifs UX/CRO/a11y fusionnés et déployés, 40 tests et build verts, smoke production complet, captures finales mobile 360/390 et desktop 1440
+En cours : aucune
+Prochaine action exacte : STOP. Attendre informations légales/contact éditeur, autorisation commerciale d'images et décision explicite avant indexation.
 
-## Décisions UX
-- Palette originale vert foncé / crème conservée : lisibilité et caractère sobre appropriés au comparateur.
-- Accueil : message centré sur la comparaison de plusieurs offres d'un même produit.
-- Prix : livraison inconnue annoncée avant et après le prix ; jamais présentée comme gratuite.
-- Comparatifs : marque dans le H1, lien « Voir toutes les offres », boutons marchands nominatifs.
-- Mobile : informations utiles rapprochées du haut, cible clavier/tactile minimum 44 px.
-- Aucun nom de produit ou de marchand ajouté en dur dans src/.
+## Livré (audit du 11 octobre 2026)
+- Homepage : proposition de valeur immédiatement compréhensible, appel à comparer les produits, cartes plus explicites.
+- Prix avec livraison inconnue : étiquette « hors livraison », total non calculable explicite dans la carte et le comparatif.
+- Comparatifs : H1 marque + modèle, lien vers les offres, CTA marchands nominatifs, distinction marketplace conservée.
+- Mobile 360/390 : en-tête compact, prix et statut de livraison visibles dans le premier écran pour un comparatif réel.
+- Desktop 1440 : espace hero resserré, titre du catalogue remonté dans le premier écran.
+- Typographie secondaire et zones tactiles renforcées ; état aria-current du menu corrigé.
+- Palette vert profond / crème préservée ; aucun framework, script client ni média non autorisé ajouté.
+- Quality gates GitHub Actions ajoutés ; validation réelle effectuée par Cloudflare Builds.
 
-## Invariants conservés
-- Astro/TypeScript, Worker, D1 et données existantes ; aucun changement de migration ni de classement.
-- Liens sortants exclusivement via /go/ ; UTM et tracking inchangés.
-- Aucune image sans droit ; table product_media conservée.
-- SEO : canonical, Product/AggregateOffer, Breadcrumb, sitemap et robots conservés ; noindex,follow maintenu.
-- Les pages légales restent provisoires tant que l'éditeur ne fournit pas les éléments requis.
+## Vérifications
+- npm test : 40/40 réussite ; npm run build : succès sur Cloudflare.
+- Déploiement Worker production : succès, version 25a93b79-c410-4d6a-9f63-5980844ba84d.
+- Smoke distant : accueil, comparatif de test, deux produits réels (Dreame 4 offres ; Tineco 6 offres), /go/ 302, mismatch snapshot, 404.
+- Pages à propos, comment ça marche, affiliation, confidentialité, mentions légales, contact : HTTP 200 et noindex.
+- SEO : canonical, WebSite, Product/AggregateOffer, BreadcrumbList, robots.txt, sitemap.xml validés.
+- Visuel réel inspecté sur production : homepage 390 mobile, fiche produit 360 mobile, homepage 1440 desktop.
+- Non mesuré : Core Web Vitals LCP/CLS/INP, WCAG AA exhaustif, tests visuels complets 768/1024, taux de conversion réel.
+- D1 conservée : 16 offres courantes, product_media = 0 ; aucun changement de migrations.
+- noindex,follow conservé ; /go/, UTM, tracking, classement et historique inchangés.
 
-## Contrôle à terminer
-- npm test et npm run build doivent réussir sur Cloudflare Builds.
-- Smoke distant doit réussir avant tout verdict de déploiement.
-- Vérifier les pages live, les deux comparatifs, /go/, 404, pages fixes, robots.txt, sitemap.xml.
-- Inspecter les rendus mobile et desktop dès que l'accès aux captures n'est plus limité.
-
-## Bloqueurs extérieurs
-- Images : aucune licence prouvée, product_media = 0, ne rien importer.
-- Identité de l'éditeur, coordonnées publiques, politique confidentialité : à valider avant l'ouverture.
-- Aucun programme d'affiliation actif ; pas de promesse de rémunération.
-- Garder noindex jusqu'à décision explicite.
+## Prérequis avant lancement public
+- Compléter et vérifier identité de l'éditeur, mentions légales, confidentialité et contact.
+- Obtenir des images avec droits commerciaux documentés ; aucune image copiée de moteurs de recherche.
+- Activer et vérifier les programmes d'affiliation si monétisation voulue.
+- Décision explicite d'Aymen avant retrait de noindex, puis Search Console/sitemap.
 
 Worker : https://comparateur.aymen-for-pic.workers.dev
 D1 : comparateur-db / 60d9a7b4-ef44-464e-9fc7-ebf3a3e71178
+Dernier commit déployé : faedafa15cef8959ba3532a0d114142acf8c9168
