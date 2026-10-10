@@ -18,5 +18,5 @@ const { offer, index, leading = false, sourceParams } = Astro.props;
     {offer.delivery_info && <p>{offer.delivery_info}</p>}
     <p class="checked">Relevé le <time datetime={offer.checked_at}>{formatDateTime(offer.checked_at)}</time><span class="timezone"> (heure de Paris)</span></p>
   </div>
-  <a class:list={['button', leading ? 'button-primary' : 'button-secondary']} href={makeGoHref(offer.page_offer_id, offer.snapshot_id, sourceParams)} rel="sponsored nofollow" aria-label={`Voir l’offre chez ${offer.merchant_name}${offer.seller_name ? `, vendu par ${offer.seller_name}` : ''}`}>Voir l’offre <span aria-hidden="true">↗</span></a>
+  <a class:list={['button', leading ? 'button-primary' : 'button-secondary']} href={makeGoHref(offer.page_offer_id, offer.snapshot_id, sourceParams)} rel="sponsored nofollow" aria-label={`Voir l’offre chez ${offer.merchant_name}${offer.seller_name ? `, vendu par ${offer.seller_name}` : ''}`}>Voir chez {offer.merchant_name} <span aria-hidden="true">↗</span></a>
 </li>
