@@ -1,39 +1,31 @@
 # PROJECT STATE
-Statut : terminé
-Objectif actuel : Phase 2 — tracking serveur vues + clics sortants
-Dernière étape validée : validation distante D1 + smoke après déploiement
-En cours : aucune
-Prochaine action exacte : STOP. Ne pas commencer la phase suivante sans instruction explicite d'Aymen.
+Statut : en cours
+Objectif actuel : Phase 3 — données réelles + affiliation mesurable
+Dernière étape validée : Phase 2 terminée (tracking vues + /go/ en production)
+En cours : 1 — vérification de l'état réel puis recherche des données réelles
+Prochaine action exacte : rechercher et vérifier les offres des 2 produits cibles, puis construire `imports/` + `scripts/import.mjs`
 
-## Phase 2 livrée
-- Vue comparative : tracking serveur dans `views`.
-- HEAD/prefetch/prerender ignorés.
-- UTM : source/campaign/content ; aucune IP, cookie, visitor id ou User-Agent brut stocké.
-- `internal_test` via `x-comparateur-internal-test: 1`; `bot_suspected` calculé en mémoire.
-- Tous les liens marchands passent par `/go/<page_offer_id>?s=<snapshot_id>`.
-- Tokens opaques alphanumériques de 18 caractères.
-- Snapshot appartenant à l'offre → conservé ; absent/mismatch → NULL sans bloquer la redirection.
-- page_offer inconnu → 404 ; destination hors HTTP(S) → refus.
-- Une panne d'écriture tracking ne doit pas bloquer un clic vers une destination valide.
-- Pipeline Cloudflare : `npm test && npm run build`, puis deploy + smoke distant.
+## État vérifié au démarrage de la phase 3 (2026-10-10)
+- GitHub `Hamzaoui35/comparateur`, branche main, dernier commit `aed2797 docs: mark phase 2 complete`.
+- Local : `npm test` 22/22, `npm run build` OK (installation : `npm install`, pas de package-lock dans le dépôt).
+- D1 distante `comparateur-db` (60d9a7b4-ef44-464e-9fc7-ebf3a3e71178) : 16 tables + 1 vue, migration 0001 seule ; fixtures uniquement (2 produits test, 3 marchands .example, 6 offres, 12 relevés, 2 pages, 7 page_offers) ; views 1 (interne), clicks 2 (internes), sales 0.
+- Worker `comparateur` présent ; https://comparateur.aymen-for-pic.workers.dev inaccessible depuis le réseau de l'agent → contrôles HTTP via le smoke du pipeline Cloudflare + lecture D1.
 
-## Vérifications
-- Tests : 22/22, 0 échec.
-- Build Astro + déploiement Worker : succès.
-- Smoke : accueil=200, comparatif=200, /go=302, mismatch=302, go inconnu=404, page inconnue=404.
-- D1 vue smoke : source=smoke, campaign=phase2, content=remote, internal_test=1, bot_suspected=0.
-- D1 clic valide : token 18 chars, page_offer_id=2, offer_snapshot_id=2, affiliate_active=1.
-- D1 clic mismatch : token 18 chars, même page_offer, offer_snapshot_id=NULL, redirection conservée.
-- Worker version validée : `ba0d61c8-efd8-4718-ab93-5443a98eeec1`.
+## Reste à faire (phase 3)
+1. Données réelles vérifiées (2 produits, marchands, offres, relevés, affiliation)
+2. Système d'import `imports/` (JSON validé → SQL idempotent par clés naturelles)
+3. Tests : import idempotent, historique des prix, page pilotée par les données, URLs HTTP(S) seulement
+4. Import en D1 distante + contrôles
+5. Smoke étendu aux pages réelles + vérification D1 des vues/clics internes
 
 ## Blocages / À faire par Aymen
-- Aucun.
+- (aucun pour l'instant)
 
-## Hors Phase 2
-- Pas encore de vrais produits/marchands.
-- Pas encore d'intégration réseau affilié ni propagation d'un sub-ID spécifique au réseau.
-- Pas de sales import, agrégats, Performance Score, Trend Detector, SEO ou publication automatique.
+## Décisions prises
+- Phases 1 et 2 : voir l'historique Git.
+
+## Hors phase 3
+Trend Detector, Opportunity/Performance Score, agrégats, Search Console, SEO avancé, levée du noindex, automatisation des prix, multi-sites, dashboard.
 
 Worker : `https://comparateur.aymen-for-pic.workers.dev`
 D1 : `comparateur-db` / `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`
-Dernier commit fonctionnel : `844941dd phase2: tolerate Workers rollout in smoke test`
