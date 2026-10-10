@@ -16,7 +16,7 @@ import { getActiveOffers, getPublishedPage } from '../src/lib/comparison.ts';
 import { rankOffers } from '../src/lib/ranking.ts';
 
 const FIXTURE_DIR = join(repoRoot, 'tests', 'fixtures', 'imports');
-const TABLES = ['merchants', 'products', 'offers', 'pages', 'page_offers', 'offer_snapshots'];
+const TABLES = ['merchants', 'products', 'product_media', 'offers', 'pages', 'page_offers', 'offer_snapshots'];
 const counts = (db) => Object.fromEntries(TABLES.map((t) => [t, count(db, t)]));
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -148,4 +148,49 @@ test('offre existante rattachée à un autre produit : jamais écrasée par un i
     `SELECT p.slug, o.seller_name FROM offers o JOIN products p ON p.id = o.product_id WHERE o.merchant_url = ?`,
   ).get(data.products[0].offers[0].merchant_url);
   assert.deepEqual({ ...row }, { slug: 'produit-test-d', seller_name: null });
+});
+
+
+test('médias : import idempotent uniquement avec une base de droit commercial reconnue', () => {
+  const data = clone(loadImportDir(FIXTURE_DIR));
+  data.products[0].media = [{
+    url: 'https://cdn.example/produit.webp',
+    alt_text: 'Produit de test',
+    role: 'primary',
+    position: 1,
+    source_url: 'https://licence.example/produit',
+    rights_basis: 'licensed',
+    rights_note: 'Licence commerciale de test',
+    checked_at: '2026-10-10T00:00:00Z',
+  }];
+  assert.deepEqual(validateImport(data, { forbidFixtures: false }), []);
+
+  const db = freshDb();
+  db.exec(toSql(data));
+  db.exec(toSql(data));
+  assert.equal(count(db, 'product_media'), 1);
+  const row = db.prepare('SELECT role, position, rights_basis, alt_text FROM product_media').get();
+  assert.deepEqual({ ...row }, {
+    role: 'primary',
+    position: 1,
+    rights_basis: 'licensed',
+    alt_text: 'Produit de test',
+  });
+});
+
+test('médias : image sans droit explicite ou galerie sans primary refusée', () => {
+  const data = clone(loadImportDir(FIXTURE_DIR));
+  data.products[0].media = [{
+    url: 'https://cdn.example/produit.webp',
+    alt_text: 'Produit de test',
+    role: 'gallery',
+    position: 2,
+    source_url: 'https://fabricant.example/produit',
+    rights_basis: 'unknown',
+    rights_note: 'Source trouvée sur le web',
+    checked_at: '2026-10-10T00:00:00Z',
+  }];
+  const errors = validateImport(data, { forbidFixtures: false });
+  assert.ok(errors.some((e) => e.includes('rights_basis')), errors.join('\n'));
+  assert.ok(errors.some((e) => e.includes('exactement un primary')), errors.join('\n'));
 });
