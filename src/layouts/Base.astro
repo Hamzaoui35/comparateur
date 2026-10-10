@@ -2,21 +2,58 @@
 interface Props {
   title: string;
   description?: string;
+  canonicalPath?: string;
+  image?: string | null;
+  type?: 'website' | 'product' | 'article';
+  robots?: string;
+  structuredData?: unknown | unknown[];
 }
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { SITE_NAME, absoluteSiteUrl } from '../lib/site';
 import '../styles/global.css';
-const { title, description = 'Comparez les prix, la livraison, la disponibilité et les vendeurs. Des offres datées pour choisir en connaissance de cause.' } = Astro.props;
+
+const {
+  title,
+  description = 'Comparez les prix, la livraison, la disponibilité et les vendeurs. Des offres datées pour choisir en connaissance de cause.',
+  canonicalPath = Astro.url.pathname,
+  image = null,
+  type = 'website',
+  robots = 'noindex,follow',
+  structuredData = [],
+} = Astro.props;
+
+const canonical = absoluteSiteUrl(canonicalPath);
+const jsonLdBlocks = (Array.isArray(structuredData) ? structuredData : [structuredData]).filter(Boolean);
+const serializeJsonLd = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c');
 ---
 <!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
+    <meta name="robots" content={robots} />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#173e35" />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {image && <meta property="og:image" content={image} />}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={image} />}
+
+    {jsonLdBlocks.map((block) => (
+      <script type="application/ld+json" set:html={serializeJsonLd(block)} />
+    ))}
+
     <title>{title}</title>
   </head>
   <body>
