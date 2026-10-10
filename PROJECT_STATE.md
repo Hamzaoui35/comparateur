@@ -1,29 +1,45 @@
 # PROJECT STATE
-Statut : en cours
+Statut : terminé
 Objectif actuel : Phase 4C — médias produits + préparation SEO Google
-Dernière étape validée : Phase 4B design public déployé ; build Cloudflare et smoke Phase 4B réussis.
-En cours : schéma média avec contrôle des droits, SEO technique, données structurées, sitemap/robots.
-Prochaine action exacte : créer migration product_media, adapter import/lecture/UI/SEO, appliquer D1, tester et déployer.
+Dernière étape validée : déploiement production + smoke Phase 4C + contrôle D1
+En cours : aucune
+Prochaine action exacte : STOP. Attendre des visuels avec droit commercial explicite et les prérequis de lancement avant retrait de noindex.
 
-## Décisions
-- noindex reste actif pendant toute la Phase 4C.
-- Aucun visuel fabricant n'est copié sans droit commercial explicite.
-- Les médias ne peuvent être importés que si leur base de droit est documentée : owned, licensed, affiliate_feed, manufacturer_permission ou public_domain.
-- Dreame et Tineco interdisent actuellement la réutilisation commerciale de leurs contenus de site sans autorisation : leurs images officielles ne sont donc pas copiées.
-- L'UI accepte 1 image principale + galerie ; elle reste propre sans image.
-- SEO cible : canonical, Open Graph, Product + AggregateOffer JSON-LD, BreadcrumbList, sitemap.xml, robots.txt.
-- Les résultats Google seront préparés mais pas activés tant que noindex n'est pas retiré.
+## Livré
+- Migration `0002_product_media.sql` appliquée sur D1 : table `product_media` avec provenance et base de droit obligatoire.
+- Import média idempotent ; une image sans droit documenté est refusée.
+- Support UI : image principale + galerie, homepage et comparatif, responsive et sans régression quand aucune image n’existe.
+- SEO : canonical sans UTM, Open Graph/Twitter, JSON-LD `WebSite`, `Product` + `AggregateOffer`, `BreadcrumbList`.
+- GTIN exposé dans les données structurées quand disponible.
+- `/sitemap.xml` dynamique et `/robots.txt` opérationnels.
+- `noindex,follow` conservé : Google ne doit pas encore indexer le site.
+- Aucun lien marchand direct réintroduit ; `/go/` et tracking inchangés.
 
-## Blocage externe pour les vraies photos
-- Obtenir un visuel autorisé via réseau d'affiliation/feed, permission fabricant, photo appartenant à Aymen ou autre licence commerciale.
-- Ne jamais coller/copier une image trouvée sur Google ou sur une fiche fabricant sans droit.
+## Vérifications
+- Tests : 40/40, 0 échec.
+- Build Astro : succès.
+- Déploiement Worker : succès.
+- Version validée : `6f721769-0a0f-4d53-94cb-04dc32f1a26a`.
+- Smoke Phase 2 : OK.
+- Smoke Phase 3 : 2 pages réelles + /go : OK.
+- Smoke Phase 4B : homepage, pages fixes, 404, disclosure, noindex : OK.
+- Smoke Phase 4C : canonical, Product/AggregateOffer, Breadcrumb, sitemap, robots : OK.
+- D1 : migrations 0001 + 0002 ; product_media = 0 ; 16 offres courantes inchangées.
+- Builds automatiques GitHub → Cloudflare réactivés.
 
-## À fournir par Aymen avant lancement public
-- Identité/statut/adresse/contact public pour mentions légales/confidentialité.
-- Acceptation d'au moins un réseau d'affiliation.
-- Validation explicite avant retrait de noindex et soumission Search Console.
+## Médias — blocage externe
+- Aucun visuel produit n’est encore affiché en production.
+- Les conditions publiques de Dreame et Tineco ne permettent pas de considérer leurs images de site comme librement réutilisables commercialement.
+- Sources acceptables : photo appartenant à Aymen, licence commerciale, flux/créatif d’un réseau affilié autorisé, permission fabricant écrite, domaine public.
+- Ne jamais copier une image Google/fabricant/marchand sans droit explicite.
 
-## Ressources
-- Worker : https://comparateur.aymen-for-pic.workers.dev
-- D1 : comparateur-db
-- GitHub : Hamzaoui35/comparateur
+## Avant indexation Google
+- Compléter mentions légales / contact / confidentialité avec les vraies informations de l’éditeur.
+- Activer au moins un programme d’affiliation si souhaité pour la monétisation.
+- Ajouter les visuels autorisés lorsqu’ils deviennent disponibles.
+- Décision explicite d’Aymen pour retirer `noindex`.
+- Puis connecter Google Search Console, envoyer le sitemap et demander l’indexation.
+
+Worker : `https://comparateur.aymen-for-pic.workers.dev`
+D1 : `comparateur-db` / `60d9a7b4-ef44-464e-9fc7-ebf3a3e71178`
+Dernier commit fonctionnel : `d3f3560 phase4c: accept noindex follow directive in smoke`
