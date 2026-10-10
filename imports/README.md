@@ -23,7 +23,7 @@ Commandes : `npm run import:check` · `npm run import:sql` · `npm run import:lo
 | Fichier | Contenu | Clé naturelle |
 |---|---|---|
 | `data/merchants.json` | marchands + statut d'affiliation documenté | `domain` |
-| `data/products/<slug>.json` | produit, page `/comparatifs/<slug>`, offres, offres écartées | `product.slug`, `page.slug`, `merchant_url` |
+| `data/products/<slug>.json` | produit, médias autorisés éventuels, page `/comparatifs/<slug>`, offres, offres écartées | `product.slug`, `page.slug`, `merchant_url` |
 | `data/snapshots/<AAAA-MM-JJ>.json` | un lot de relevés datés | (offre, `checked_at`, `source`) |
 
 Un nouveau relevé de prix = un **nouveau fichier** dans `snapshots/` (jamais une modification d'un lot existant) : l'historique reste dans `offer_snapshots`, le plus récent devient courant dans `current_offers`.
@@ -38,6 +38,8 @@ Un nouveau relevé de prix = un **nouveau fichier** dans `snapshots/` (jamais un
 - Offres marketplace : `seller_name` = vendeur affiché ; une seule offre par URL marchand (contrainte `offers.merchant_url`), on retient l'offre vendue par l'enseigne quand elle existe. Les offres écartées sont listées dans `excluded_offers` avec la raison.
 - GTIN : contrôle de la clé EAN par le validateur. URL : https uniquement, sans identifiants, sur le domaine du marchand.
 - Aucune suppression : un import n'efface rien ; une offre existante rattachée à un autre produit n'est jamais écrasée.
+- Médias : ne renseigner `media[]` que si le droit d'affichage commercial est documenté. Chaque entrée contient `url`, `alt_text`, `role`, `position`, `source_url`, `rights_basis`, `rights_note`, `checked_at`.
+- Une image copiée depuis Google Images, un fabricant ou un marchand sans licence explicite est refusée par la règle projet.
 
 ## Affiliation
 
@@ -55,7 +57,7 @@ Statut au 2026-10-10 : voir `data/merchants.json` (Darty, Fnac, E.Leclerc, Alter
 
 Le token est injecté via le placeholder `{tracking_token}` dans `affiliate_url`. Le paramètre propre à chaque réseau (`clickref`, `subid`, …) ne doit être ajouté **qu'après lecture de la documentation officielle du réseau**, réseau par réseau. Aucun réseau n'est branché à ce jour.
 
-Point relevé dans la documentation Awin (ClickRef) : « Always use lowercase letters », 50 caractères maximum. Le token actuel (18 caractères, majuscules + minuscules) devra être adapté pour Awin (alphabet minuscule) avant activation, sinon le rapprochement vente → clic peut échouer.
+Point relevé dans la documentation Awin (ClickRef) : les références doivent rester en minuscules ; les nouveaux tokens utilisent désormais 18 caractères `[a-z0-9]`. Les anciens tokens historiques ne sont pas réécrits.
 
 ## Ventes et EPC (préparé, non branché)
 
@@ -63,3 +65,13 @@ Point relevé dans la documentation Awin (ClickRef) : « Always use lowercase le
 - EPC = commissions **validées** / clics affiliés pertinents
   - numérateur : `sales.commission_cents` avec statut validé du réseau (annulées et refusées exclues ; correspondance des statuts à définir par réseau) ;
   - dénominateur : `clicks` avec `affiliate_active = 1`, `internal_test = 0`, `bot_suspected = 0`.
+
+
+## SEO préparé (Phase 4C)
+
+- Canonical propre sans paramètres UTM.
+- Open Graph / Twitter Card génériques ; image uniquement si média autorisé.
+- JSON-LD `Product` + `AggregateOffer` sur les comparatifs, avec GTIN quand disponible.
+- JSON-LD `BreadcrumbList` et `WebSite`.
+- `/sitemap.xml` et `/robots.txt` générés par l'application.
+- `noindex,follow` reste actif jusqu'à décision explicite de lancement et validation des mentions légales/affiliation.
