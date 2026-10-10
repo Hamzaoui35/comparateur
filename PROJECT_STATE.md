@@ -1,33 +1,30 @@
 # PROJECT STATE
 Statut : en cours
-Objectif actuel : Phase 4 — affiliation réelle + préparation lancement public
-Dernière étape validée : Phase 3 complète (données réelles + tracking en production)
-En cours : 1 — rendre le tracking compatible avec les premiers réseaux.
-Prochaine action exacte : valider le nouveau token lowercase en CI/Cloudflare, puis brancher les liens Awin/Effinity/Kwanko après acceptation d'Aymen.
+Objectif actuel : Phase 4B — design public et préparation affiliation
+Dernière étape validée : audit du dépôt, D1 et déploiement actuel réussi (244907d).
+En cours : interface publique, composants et pages de confiance.
+Prochaine action exacte : implémenter accueil SSR D1, comparatifs responsive et pages fixes ; tester avant push.
 
-## Phase 4 — périmètre
-- Préparer le tracking pour les réseaux réels sans casser les clics historiques.
-- Intégrer chaque réseau uniquement après acceptation et à partir de sa documentation officielle.
-- Conserver merchant_url comme fallback tant qu'aucun lien affilié valide n'est disponible.
-- Ne jamais favoriser une offre affiliée dans le classement.
+## Décisions prises
+- Direction comparateur éditorial : ivoire, bleu nuit, vert profond ; CSS natif, aucune dépendance UI.
+- Identité temporaire « Comparateur » ; aucun domaine ni image produit inventée.
+- Classement, /go/, tracking et historique conservés ; noindex partout.
+- Accueil dynamique, fixtures source=seed exclues de la vitrine par provenance ; aucune suppression D1.
+- 3 directions étudiées : éditorial (retenu avec cartes fonctionnelles), catalogue shopping, tech grand public.
+- GitHub main déclenche le build Cloudflare existant (tests + build + déploiement + smoke).
 
-## Décisions
-- Les nouveaux tracking_token utilisent 18 caractères [a-z0-9].
-- Les anciens tokens restent inchangés en base : aucune migration.
-- Aucune affiliate_url active à ce stade.
+## Validation à faire
+- Tests existants + tests catalogue et interface ; npm run build.
+- Vérification visuelle 360/390/768/1024/1440 px ; clavier et états limites.
+- Déploiement comparateur + smoke distant + relecture production.
 
-## Action humaine nécessaire
-- Awin : candidater à Darty, Fnac, E.Leclerc, Alternate.
-- Effinity : candidater à Boulanger.
-- Kwanko : candidater à Carrefour.
-- Ne jamais mettre de secret dans GitHub ou dans le chat.
+## À fournir par Aymen avant lancement public
+- Identité juridique de l’éditeur, statut et mentions d’immatriculation applicables.
+- Adresse de publication, responsable de publication, coordonnées de contact publiques.
+- Contact confidentialité, durées de conservation et validation des mentions/confidentialité.
+- Nom définitif éventuel ; acceptations d’affiliation (aucune activation dans cette phase).
 
-## État actuel
-- Dreame H12 Pro FlexReach : 4 offres.
-- Tineco Floor One S5 Stretch Extreme : 6 offres.
-- Tests avant Phase 4 : 33/33.
-- sales = 0 ; affiliate_url = NULL partout.
-- Worker : `https://comparateur.aymen-for-pic.workers.dev`
-- D1 : `comparateur-db`
-
-STOP si l'activation d'un réseau exige une acceptation contractuelle non encore faite.
+## Ressources conservées
+- Worker : https://comparateur.aymen-for-pic.workers.dev
+- D1 : comparateur-db ; aucune migration prévue.
+- Affiliation : aucun nouveau lien actif ; tokens lowercase de phase 4 conservés.
