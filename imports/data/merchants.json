@@ -1,0 +1,90 @@
+{
+  "merchants": [
+    {
+      "domain": "fr.dreametech.com",
+      "name": "Dreame (boutique officielle)",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "C",
+        "summary": "Aucun programme France trouvé. Programmes Dreame EU (CJ, de.dreametech.com) et Dreame Nordics (Impact) listés : couverture de la boutique FR non confirmée.",
+        "sources": ["https://affi.io/m/dreame"]
+      }
+    },
+    {
+      "domain": "darty.com",
+      "name": "Darty",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Awin (Darty FR, merchant 7735)",
+        "summary": "Programme officiel sur Awin : 3 à 8 % du CA HT selon catégorie, cookie 15 jours, validation mensuelle. Inscription d'Aymen requise. Commission sur les ventes marketplace non confirmée.",
+        "sources": ["https://ui.awin.com/merchant-profile/7735", "https://www.darty.com/services/partenaires/affiliation"]
+      }
+    },
+    {
+      "domain": "fnac.com",
+      "name": "Fnac",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Awin (Fnac FR)",
+        "summary": "Programme Fnac FR listé ouvert sur Awin (l'ancien programme Affilinet indique un transfert vers Awin). Conditions à confirmer lors de l'inscription.",
+        "sources": ["https://affi.io/m/fnac"]
+      }
+    },
+    {
+      "domain": "but.fr",
+      "name": "BUT",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "C",
+        "summary": "Programme Awin listé fermé ; seul Plebicom (réseau cashback, non adapté à un comparateur éditorial) est listé ouvert.",
+        "sources": ["https://affi.io/m/but"]
+      }
+    },
+    {
+      "domain": "e.leclerc",
+      "name": "E.Leclerc",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Awin (E.Leclerc FR)",
+        "summary": "Programme E.Leclerc FR listé ouvert sur Awin. Conditions et commission non publiées : à confirmer lors de l'inscription.",
+        "sources": ["https://affi.io/m/e-leclerc"]
+      }
+    },
+    {
+      "domain": "carrefour.fr",
+      "name": "Carrefour",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Kwanko (Carrefour)",
+        "summary": "Programme Carrefour listé ouvert sur Kwanko (cookie 30 jours) ; Effinity fermé. Commission non publiée : à confirmer lors de l'inscription.",
+        "sources": ["https://affi.io/m/carrefour"]
+      }
+    },
+    {
+      "domain": "boulanger.com",
+      "name": "Boulanger",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Effinity (Effiliation)",
+        "summary": "Page officielle : inscription gratuite via Effiliation/Effinity, petit électroménager 4 %, cookie 30 jours, taux évolutifs. Kwanko également listé. Inscription d'Aymen requise.",
+        "sources": ["https://www.boulanger.com/info/corporate/afiliation.htm", "https://affi.io/m/boulanger"]
+      }
+    },
+    {
+      "domain": "alternate.fr",
+      "name": "Alternate",
+      "affiliate_network": null,
+      "affiliation": {
+        "status": "B",
+        "candidate_network": "Awin (Alternate FR)",
+        "summary": "Programme listé ouvert sur Awin (aussi Sale Gains, BlueAff, Moxielinks). Commission non publiée : à confirmer lors de l'inscription.",
+        "sources": ["https://affi.io/m/alternate"]
+      }
+    }
+  ]
+}

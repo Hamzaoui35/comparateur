@@ -11,7 +11,11 @@
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "db:seed:local": "wrangler d1 execute DB --local --file=seed/dev.sql",
     "db:seed:remote": "wrangler d1 execute DB --remote --file=seed/dev.sql",
-    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test tests/*.test.mjs"
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test tests/*.test.mjs",
+    "import:check": "node scripts/import.mjs --check",
+    "import:sql": "node scripts/import.mjs --out imports/.out/import.sql",
+    "import:local": "node scripts/import.mjs --out imports/.out/import.sql && wrangler d1 execute DB --local --file=imports/.out/import.sql",
+    "import:remote": "node scripts/import.mjs --out imports/.out/import.sql && wrangler d1 execute DB --remote --file=imports/.out/import.sql"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.3.4",

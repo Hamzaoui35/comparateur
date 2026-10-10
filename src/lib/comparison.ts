@@ -18,6 +18,7 @@ export interface PageOfferRow {
   brand: string;
   model: string;
   merchant_name: string;
+  seller_name: string | null; // vendeur tiers (marketplace) ; null = vendu par le marchand lui-même ou non précisé
   offer_id: number;
   snapshot_id: number;
   price_cents: number;
@@ -61,6 +62,7 @@ export async function getActiveOffers(db: D1Database, pageId: number): Promise<P
               p.brand,
               p.model,
               m.name           AS merchant_name,
+              co.seller_name,
               co.offer_id,
               co.snapshot_id,
               co.price_cents,

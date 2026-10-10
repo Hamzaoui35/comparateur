@@ -64,10 +64,18 @@ Messages utilisateur : étape importante terminée, blocage nécessitant une act
 - UTM autorisés : utm_source, utm_campaign, utm_content ; valeurs bornées/sanitisées.
 - internal_test via en-tête de test ; bot_suspected peut inspecter le User-Agent en mémoire mais ne jamais le persister brut.
 
+## Phase 3 — données réelles
+- Données réelles uniquement dans `imports/data/` (JSON vérifié, preuve citée) ; fixtures dans `seed/` et `tests/fixtures/`. Process et règles : `imports/README.md`.
+- Import : `scripts/import.mjs` (validation + SQL idempotent par clés naturelles, aucune suppression). Nouveau relevé = nouveau fichier `imports/data/snapshots/<date>.json`.
+- Jamais de valeur inventée : non affiché → NULL / unknown. Livraison gratuite seulement si affichée sans condition.
+- `affiliate_url` seulement pour un programme où Aymen est accepté ; paramètre de sub-ID ajouté réseau par réseau d'après la doc officielle.
+- Le smoke distant contrôle aussi chaque page de `imports/data/products/` (en-tête internal_test).
+
 ## Hors périmètre tant qu'Aymen ne l'a pas lancé
-Trend detector, agrégats réels, scores, e-mails, comptes utilisateurs, admin, IA de rédaction, publication automatique, multi-sites, publicité, intégration marchands/réseaux automatique, scraping, SEO avancé, design final, import de vrais produits.
+Trend detector, agrégats réels, scores (Trend / Opportunity / Performance, toujours séparés), e-mails, comptes utilisateurs, admin, IA de rédaction, publication automatique, multi-sites, publicité, intégration marchands/réseaux automatique, automatisation des prix, scraping, SEO avancé, levée du noindex, design final.
 
 ## Commandes
 - `npm run build` · `npm run dev` · `npm run preview` · `npm test`
 - `npm run db:migrate:local` / `db:migrate:remote` · `npm run db:seed:local` / `db:seed:remote`
 - `npm run deploy` (build + wrangler deploy)
+- `npm run import:check` · `npm run import:sql` · `npm run import:local` / `import:remote`

@@ -1,0 +1,107 @@
+{
+  "checked_at": "2026-10-10T17:55:00Z",
+  "source": "manual:web",
+  "method": "Lecture manuelle de chaque page marchand le 2026-10-10 entre 17:50 et 18:00 UTC. Aucune valeur déduite : NULL ou unknown quand la page ne l'affiche pas.",
+  "snapshots": [
+    {
+      "merchant_url": "https://fr.dreametech.com/products/dreame-h12-pro-flexreach",
+      "price_cents": 26900,
+      "shipping_cents": 0,
+      "availability": "unknown",
+      "delivery_info": null,
+      "warranty_info": null,
+      "return_info": null,
+      "evidence": "« 269,00 € » « Prix régulier », « Livraison Gratuite » sans condition affichée ; aucun statut de stock, garantie ni délai de retour affiché."
+    },
+    {
+      "merchant_url": "https://www.darty.com/nav/achat/petit_electromenager/aspirateur_avec_sac_sans_sac/aspirateur_laveur/dreame_h12_pro_flex_reach.html",
+      "price_cents": 26900,
+      "shipping_cents": 0,
+      "availability": "in_stock",
+      "delivery_info": "Livré dès le 17/10",
+      "warranty_info": "Garantie légale de conformité 2 ans ; garantie d'origine 2 ans",
+      "return_info": "14 jours pour changer d'avis ; frais de retour à la charge de l'acheteur",
+      "evidence": "« Vendu et expédié par Dreame Tech Store », 269 €, « Livraison gratuite », « Livré dès le 17/10 »."
+    },
+    {
+      "merchant_url": "https://www.fnac.com/DREAME-H12-Pro-FlexReach-Aspirateur-Laveur-portee-a-Plat-a-180-sechage-5-Min-Aspiration-18-kPa-Lavage-a-Chaud-a-90-C-Nettoyage-Deux-Bords-50-Minutes-de-Nettoyage/a21572711/w-4",
+      "price_cents": 26900,
+      "shipping_cents": 0,
+      "availability": "in_stock",
+      "delivery_info": "Livré entre le 17/10 et le 22/10",
+      "warranty_info": "Garantie d'origine 2 ans",
+      "return_info": null,
+      "evidence": "« Vendu et livré par DreameTechStore », 269 €, « LIVRAISON OFFERTE », « Livré entre le 17/10 et le 22/10 »."
+    },
+    {
+      "merchant_url": "https://www.but.fr/produits/6977328065582/Aspirateur-balai-laveur-DREAME-H12-PRO-FLEXREACH.html",
+      "price_cents": 26900,
+      "shipping_cents": null,
+      "availability": "unknown",
+      "delivery_info": null,
+      "warranty_info": "2 ans pièces et main-d'œuvre",
+      "return_info": null,
+      "evidence": "« 269,00€ » dont éco-part 3,19 € ; « 0 disponibles » sans magasin sélectionné ; vendeur « undefined » ; frais de livraison non affichés."
+    },
+    {
+      "merchant_url": "https://www.e.leclerc/fp/aspirateur-laveur-tineco-floor-one-s5-stretch-extreme-bleu-6932485001682",
+      "price_cents": 20999,
+      "shipping_cents": null,
+      "availability": "in_stock",
+      "delivery_info": "Retrait en magasin offert ; livraison à domicile à partir de 4,90 €",
+      "warranty_info": "Garantie légale 2 ans (produit neuf)",
+      "return_info": null,
+      "evidence": "« Vendu 209.99€ » dont éco-part 3,19 €, vendu par E.Leclerc, « En stock », « Livraison à domicile standard à partir de 4,90€ »."
+    },
+    {
+      "merchant_url": "https://www.carrefour.fr/p/aspirateur-laveur-floor-one-s5-stretch-extreme-tineco-6932485001682",
+      "price_cents": 17900,
+      "shipping_cents": null,
+      "availability": "in_stock",
+      "delivery_info": "Disponible en livraison ou en retrait magasin",
+      "warranty_info": "Garantie 2 ans",
+      "return_info": "Retour gratuit sous 14 jours",
+      "evidence": "« 179,00 € » « au lieu de 299,00 € », promotion « 1 acheté = 120€ de remise » (conditions non affichées), « Disponible en livraison » ; vendeur de l'offre principale non indiqué ; frais de livraison non confirmés pour ce produit."
+    },
+    {
+      "merchant_url": "https://www.alternate.fr/Tineco/FLOOR-ONE-S5-Stretch-Extreme-Aspirateur-sec-humide/html/product/100165244",
+      "price_cents": 25300,
+      "shipping_cents": null,
+      "availability": "in_stock",
+      "delivery_info": "Frais d'expédition à partir de 9,90 €",
+      "warranty_info": null,
+      "return_info": null,
+      "evidence": "« € 253,00 » TVA comprise, « En stock », « frais d'expédition en sus à partir de € 9,90 »."
+    },
+    {
+      "merchant_url": "https://www.darty.com/nav/achat/petit_electromenager/aspirateur-balai_main/aspirateur_balai/tineco_s5_stretch.html",
+      "price_cents": 29999,
+      "shipping_cents": null,
+      "availability": "in_stock",
+      "delivery_info": "Retrait gratuit le jour même dans plus de 20 magasins",
+      "warranty_info": "Garantie légale 2 ans",
+      "return_info": "15 jours ; retour gratuit en magasin",
+      "evidence": "« Vendu et expédié par Darty » 299,99 € dont éco-part 3,19 €, « En stock dans plus de 20 magasins » ; frais de livraison à domicile non affichés."
+    },
+    {
+      "merchant_url": "https://www.boulanger.com/ref/1220956",
+      "price_cents": 29900,
+      "shipping_cents": null,
+      "availability": "unknown",
+      "delivery_info": "Livraison offerte* (conditions non affichées)",
+      "warranty_info": "Garantie légale 2 ans",
+      "return_info": "Retours sous 15 jours",
+      "evidence": "« 299,00€ » dont éco-part 3,19 €, « Produit neuf vendu & expédié par boulanger », « Livraison Offerte* » sans condition visible, aucun statut de stock explicite."
+    },
+    {
+      "merchant_url": "https://www.fnac.com/Tineco-Floor-One-S5-Stretch-Extreme/a21370281/w-4",
+      "price_cents": 29999,
+      "shipping_cents": null,
+      "availability": "unknown",
+      "delivery_info": null,
+      "warranty_info": "Garantie 2 ans pièces, main-d'œuvre et déplacement",
+      "return_info": null,
+      "evidence": "Offre Fnac « 299,99 € » « BON PLAN » ; disponibilité et frais de livraison de cette offre non affichés (les dates de livraison concernent les vendeurs marketplace)."
+    }
+  ]
+}

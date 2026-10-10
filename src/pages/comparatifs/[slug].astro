@@ -48,7 +48,7 @@ const title = !main
           {best && rankGroup(best) <= 2 && (
             <p class="best">
               Meilleure offre disponible : <strong>{formatCents(totalCents(best) ?? best.price_cents)}</strong>
-              {best.shipping_cents === null && <span> + livraison à vérifier</span>} chez {best.merchant_name}.
+              {best.shipping_cents === null && <span> + livraison à vérifier</span>} chez {best.merchant_name}{best.seller_name && <span> (vendu par {best.seller_name})</span>}.
             </p>
           )}
 
@@ -71,6 +71,7 @@ const title = !main
                   <tr data-snapshot-id={offer.snapshot_id} data-page-offer-id={offer.page_offer_id}>
                     <td>
                       {offer.merchant_name}
+                      {offer.seller_name && <small class="seller"><br />vendu par {offer.seller_name}</small>}
                       {offer.is_recommended === 1 && <span class="badge"> Recommandé</span>}
                     </td>
                     <td>{formatCents(offer.price_cents)}</td>

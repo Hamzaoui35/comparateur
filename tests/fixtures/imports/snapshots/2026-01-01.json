@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-01-01T08:00:00Z",
+  "source": "manual:fixture",
+  "snapshots": [
+    { "merchant_url": "https://www.delta.example/p/produit-test-d", "price_cents": 10000, "shipping_cents": 500,
+      "availability": "in_stock", "delivery_info": "48 h", "warranty_info": "2 ans", "return_info": "30 jours" },
+    { "merchant_url": "https://www.epsilon.example/p/produit-test-d", "price_cents": 9900, "shipping_cents": null,
+      "availability": "in_stock", "delivery_info": null, "warranty_info": null, "return_info": null },
+    { "merchant_url": "https://www.epsilon.example/p/produit-test-d-bis", "price_cents": 8000, "shipping_cents": 0,
+      "availability": "out_of_stock", "delivery_info": null, "warranty_info": null, "return_info": null }
+  ]
+}

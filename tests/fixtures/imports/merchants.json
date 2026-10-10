@@ -1,0 +1,8 @@
+{
+  "merchants": [
+    { "domain": "delta.example", "name": "Boutique Delta", "affiliate_network": "reseau-test",
+      "affiliation": { "status": "A", "summary": "Fixture de test." } },
+    { "domain": "epsilon.example", "name": "Boutique Epsilon", "affiliate_network": null,
+      "affiliation": { "status": "C", "summary": "Fixture de test." } }
+  ]
+}

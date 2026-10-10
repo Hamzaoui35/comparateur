@@ -1,0 +1,78 @@
+{
+  "product": {
+    "slug": "tineco-floor-one-s5-stretch-extreme",
+    "brand": "Tineco",
+    "model": "Floor One S5 Stretch Extreme",
+    "category": "aspirateurs-laveurs",
+    "gtin": "6932485001682",
+    "mpn": null,
+    "manufacturer_url": "https://fr.tineco.com/products/floor-one-s5-stretch-extreme.html",
+    "evidence": [
+      "GTIN : « EAN 6932485001682 » sur alternate.fr, fnac.com (SKU 9306947) et e.leclerc, vérifié le 2026-10-10.",
+      "Page fabricant : fr.tineco.com, « Copyright 2025 Tineco Intelligent Germany GmbH » ; pas de prix, renvoie vers Boulanger, Fnac, Darty.",
+      "MPN : seuls « S5 Stretch Extreme » (Boulanger) et « Floor one S5 STRETCH » (Alternate) sont affichés, ce sont des noms de modèle : laissé à NULL."
+    ]
+  },
+  "page": {
+    "slug": "tineco-floor-one-s5-stretch-extreme",
+    "template": "meilleur-prix",
+    "group": "durable",
+    "started_at": "2026-10-10T17:55:00Z",
+    "published_at": "2026-10-10T17:55:00Z"
+  },
+  "offers": [
+    {
+      "merchant_domain": "e.leclerc",
+      "merchant_url": "https://www.e.leclerc/fp/aspirateur-laveur-tineco-floor-one-s5-stretch-extreme-bleu-6932485001682",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": null
+    },
+    {
+      "merchant_domain": "carrefour.fr",
+      "merchant_url": "https://www.carrefour.fr/p/aspirateur-laveur-floor-one-s5-stretch-extreme-tineco-6932485001682",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": null
+    },
+    {
+      "merchant_domain": "alternate.fr",
+      "merchant_url": "https://www.alternate.fr/Tineco/FLOOR-ONE-S5-Stretch-Extreme-Aspirateur-sec-humide/html/product/100165244",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": "100165244"
+    },
+    {
+      "merchant_domain": "darty.com",
+      "merchant_url": "https://www.darty.com/nav/achat/petit_electromenager/aspirateur-balai_main/aspirateur_balai/tineco_s5_stretch.html",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": "7952988"
+    },
+    {
+      "merchant_domain": "boulanger.com",
+      "merchant_url": "https://www.boulanger.com/ref/1220956",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": "1220956"
+    },
+    {
+      "merchant_domain": "fnac.com",
+      "merchant_url": "https://www.fnac.com/Tineco-Floor-One-S5-Stretch-Extreme/a21370281/w-4",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": "9306947"
+    }
+  ],
+  "excluded_offers": [
+    "darty.com / fnac.com : offres marketplace Icoza (288,55 €) et NouveauxMarchands (289,55 €) sur la même URL que l'offre Darty/Fnac (une seule offre par URL marchand) ; l'offre vendue par l'enseigne est retenue.",
+    "carrefour.fr : 7 offres de vendeurs partenaires dès 263,88 € non retenues (offre principale retenue).",
+    "e.leclerc : mention « 6 neufs dès 254,32 € » non expliquée, non retenue."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "product": {
+    "slug": "produit-test-d",
+    "brand": "MarqueTest",
+    "model": "Produit Test D",
+    "category": "categorie-test",
+    "gtin": null,
+    "mpn": null,
+    "manufacturer_url": "https://marquetest.example/produit-test-d"
+  },
+  "page": {
+    "slug": "produit-test-d",
+    "template": "meilleur-prix",
+    "group": "durable",
+    "started_at": "2026-01-01T00:00:00Z",
+    "published_at": "2026-01-01T00:00:00Z"
+  },
+  "offers": [
+    { "merchant_domain": "delta.example", "merchant_url": "https://www.delta.example/p/produit-test-d",
+      "affiliate_url": "https://www.delta.example/p/produit-test-d?ref={tracking_token}",
+      "seller_name": null, "condition": "new", "merchant_sku": "D-1" },
+    { "merchant_domain": "epsilon.example", "merchant_url": "https://www.epsilon.example/p/produit-test-d",
+      "affiliate_url": null, "seller_name": "Vendeur Partenaire", "condition": "new", "merchant_sku": null },
+    { "merchant_domain": "epsilon.example", "merchant_url": "https://www.epsilon.example/p/produit-test-d-bis",
+      "affiliate_url": null, "seller_name": null, "condition": "new", "merchant_sku": null }
+  ]
+}

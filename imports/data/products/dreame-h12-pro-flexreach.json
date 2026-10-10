@@ -1,0 +1,66 @@
+{
+  "product": {
+    "slug": "dreame-h12-pro-flexreach",
+    "brand": "Dreame",
+    "model": "H12 Pro FlexReach",
+    "category": "aspirateurs-laveurs",
+    "gtin": "6977328065582",
+    "mpn": null,
+    "manufacturer_url": "https://fr.dreametech.com/products/dreame-h12-pro-flexreach",
+    "evidence": [
+      "GTIN : « EAN 6977328065582 » sur fnac.com (SKU 9311735) et « EAN 6977328065582 » sur but.fr, vérifié le 2026-10-10.",
+      "Page fabricant : fr.dreametech.com, « © 2026 Dreame France ».",
+      "MPN non affiché sur une page officielle : laissé à NULL."
+    ]
+  },
+  "page": {
+    "slug": "dreame-h12-pro-flexreach",
+    "template": "meilleur-prix",
+    "group": "durable",
+    "started_at": "2026-10-10T17:55:00Z",
+    "published_at": "2026-10-10T17:55:00Z"
+  },
+  "offers": [
+    {
+      "merchant_domain": "fr.dreametech.com",
+      "merchant_url": "https://fr.dreametech.com/products/dreame-h12-pro-flexreach",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": null
+    },
+    {
+      "merchant_domain": "darty.com",
+      "merchant_url": "https://www.darty.com/nav/achat/petit_electromenager/aspirateur_avec_sac_sans_sac/aspirateur_laveur/dreame_h12_pro_flex_reach.html",
+      "affiliate_url": null,
+      "seller_name": "Dreame Tech Store",
+      "condition": "new",
+      "merchant_sku": "7995881"
+    },
+    {
+      "merchant_domain": "fnac.com",
+      "merchant_url": "https://www.fnac.com/DREAME-H12-Pro-FlexReach-Aspirateur-Laveur-portee-a-Plat-a-180-sechage-5-Min-Aspiration-18-kPa-Lavage-a-Chaud-a-90-C-Nettoyage-Deux-Bords-50-Minutes-de-Nettoyage/a21572711/w-4",
+      "affiliate_url": null,
+      "seller_name": "DreameTechStore",
+      "condition": "new",
+      "merchant_sku": "9311735"
+    },
+    {
+      "merchant_domain": "but.fr",
+      "merchant_url": "https://www.but.fr/produits/6977328065582/Aspirateur-balai-laveur-DREAME-H12-PRO-FLEXREACH.html",
+      "affiliate_url": null,
+      "seller_name": null,
+      "condition": "new",
+      "merchant_sku": null
+    }
+  ],
+  "excluded_offers": [
+    "rueducommerce.fr : vendeur marketplace Shop26 à 672,75 € (prix sans rapport avec le marché).",
+    "castorama.fr : vendeur marketplace Segoula18 à 623,13 €, disponibilité non affichée.",
+    "boulanger.com (réf. 1221005) : vendeur marketplace electro network à 554,34 €.",
+    "carrefour.fr : vendeur marketplace Shopelya à 539,05 €.",
+    "darty.com / fnac.com : seconde offre marketplace Electro Store / ElectroStore à ~542 € (une seule offre par URL marchand).",
+    "amazon.fr, cdiscount.com : pages non vérifiables par l'agent (accès refusé / JavaScript requis).",
+    "electrodepot.fr : seul un listing catégorie a pu être lu, pas de fiche produit."
+  ]
+}

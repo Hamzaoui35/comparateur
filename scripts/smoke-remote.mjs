@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+
 const base = 'https://comparateur.aymen-for-pic.workers.dev';
 const internalHeaders = {
   'x-comparateur-internal-test': '1',
@@ -50,3 +52,44 @@ await fetchUntil('/go/999999999?s=1', 404, () => true, { redirect: 'manual' });
 await fetchUntil('/comparatifs/inexistant', 404);
 
 console.log('SMOKE OK: accueil=200 comparatif=200 vue=trackée /go=302 mismatch=302 go-inconnu=404 page-inconnue=404');
+
+// ---------------------------------------------------------------- Phase 3 : pages réelles (pilotées par imports/data)
+// Toutes les requêtes portent l'en-tête internal_test : aucune pollution des métriques business.
+const productsDir = new URL('../imports/data/products/', import.meta.url);
+const realProducts = readdirSync(productsDir)
+  .filter((file) => file.endsWith('.json'))
+  .sort()
+  .map((file) => JSON.parse(readFileSync(new URL(file, productsDir), 'utf8')));
+
+for (const entry of realProducts) {
+  const slug = entry.page.slug;
+  const path = `/comparatifs/${slug}?utm_source=smoke&utm_campaign=phase3&utm_content=remote`;
+  const page = await fetchUntil(path, 200, ({ body }) => body.includes(entry.product.model) && body.includes('/go/'));
+  for (const expected of [entry.product.brand, entry.product.model, 'noindex', 'sponsored nofollow']) {
+    if (!page.body.includes(expected)) throw new Error(`${slug}: contenu absent: ${expected}`);
+  }
+  const hrefs = [...page.body.matchAll(/href="([^"]+)"/g)].map((match) => match[1].replaceAll('&amp;', '&'));
+  if (hrefs.some((href) => /^https?:/i.test(href))) throw new Error(`${slug}: lien marchand direct dans la page`);
+  const goLinks = hrefs.filter((href) => href.startsWith('/go/'));
+  if (goLinks.length !== entry.offers.length) {
+    throw new Error(`${slug}: ${goLinks.length} liens /go/ pour ${entry.offers.length} offres importées`);
+  }
+  if (!goLinks.every((href) => /^\/go\/\d+\?s=\d+&utm_source=smoke&utm_campaign=phase3/.test(href))) {
+    throw new Error(`${slug}: lien /go/ sans snapshot ou sans UTM`);
+  }
+  const outbound = await fetchUntil(goLinks[0], 302, () => true, { redirect: 'manual' });
+  const location = new URL(outbound.response.headers.get('location'));
+  const merchantHosts = entry.offers.map((offer) => new URL(offer.merchant_url).hostname);
+  if (location.protocol !== 'https:' || !merchantHosts.includes(location.hostname)) {
+    throw new Error(`${slug}: /go/ redirige vers une destination inattendue (${location.hostname})`);
+  }
+  console.log(`SMOKE PHASE 3 OK: ${slug} page=200 offres=${goLinks.length} /go=302 → ${location.hostname}`);
+}
+
+// Marqueur de fin : cette vue interne n'existe en D1 que si tous les contrôles précédents ont réussi.
+if (realProducts.length > 0) {
+  await fetchUntil(
+    `/comparatifs/${realProducts[0].page.slug}?utm_source=smoke&utm_campaign=phase3&utm_content=complete`,
+    200,
+  );
+}
