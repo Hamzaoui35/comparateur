@@ -10,8 +10,7 @@
     {
       "binding": "DB",
       "database_name": "comparateur-db",
-      // Remplacer par l'id renvoyé par `npx wrangler d1 create comparateur-db` (voir PROJECT_STATE.md).
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "60d9a7b4-ef44-464e-9fc7-ebf3a3e71178",
       "migrations_dir": "migrations"
     }
   ]
