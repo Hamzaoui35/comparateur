@@ -16,7 +16,7 @@ import '../styles/global.css';
 const {
   title,
   description = 'Comparez les prix, la livraison, la disponibilité et les vendeurs. Des offres datées pour choisir en connaissance de cause.',
-  canonicalPath = Astro.url.pathname,
+  canonicalPath = Astro.url.pathname.replace(/\.html$/, ''),
   image = null,
   type = 'website',
   robots = 'noindex,follow',

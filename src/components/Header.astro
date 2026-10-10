@@ -1,5 +1,5 @@
 ---
-const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const path = Astro.url.pathname.replace(/(\.html|\/+)$/, '') || '/';
 ---
 <header class="site-header">
   <div class="container header-inner">
@@ -8,7 +8,7 @@ const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
       comparateur<span class="brand-dot">.</span>
     </a>
     <nav aria-label="Navigation principale">
-      <a href="/#comparatifs">Les comparatifs</a>
+      <a href="/#comparatifs" aria-current={path.startsWith('/comparatifs/') ? 'true' : undefined}>Les comparatifs</a>
       <a href="/comment-ca-marche" aria-current={path === '/comment-ca-marche' ? 'page' : undefined}>Comment ça marche</a>
     </nav>
   </div>

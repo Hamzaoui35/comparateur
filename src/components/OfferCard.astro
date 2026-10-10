@@ -4,19 +4,21 @@ import { formatDateTime } from '../lib/format';
 import { makeGoHref } from '../lib/tracking';
 import AvailabilityBadge from './AvailabilityBadge.astro';
 import PriceBlock from './PriceBlock.astro';
-interface Props { offer: PageOfferRow; index: number; leading?: boolean; sourceParams: URLSearchParams }
-const { offer, index, leading = false, sourceParams } = Astro.props;
+interface Props { offer: PageOfferRow; index: number; leading?: boolean; sourceParams: URLSearchParams; pageCheckedAt?: string }
+const { offer, index, leading = false, sourceParams, pageCheckedAt } = Astro.props;
+// La date commune est affichée une fois en tête de page ; une offre relevée à une autre date garde la sienne.
+const ownDate = offer.checked_at !== pageCheckedAt;
 ---
 <li class:list={['offer-row', { 'offer-row--leading': leading }]} data-snapshot-id={offer.snapshot_id} data-page-offer-id={offer.page_offer_id}>
   <div class="offer-merchant"><span class="offer-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div>
-    {leading && <span class="eyebrow offer-pick">Première offre du classement</span>}
+    {leading && <span class="eyebrow offer-pick">Meilleure offre en stock</span>}
     <h3>{offer.merchant_name}</h3>
-    {offer.seller_name ? <p class="seller"><span class="marketplace-label">Marketplace</span><span>vendu par {offer.seller_name}</span></p> : <p class="seller">Vendeur non précisé dans le relevé</p>}
+    {offer.seller_name && <p class="seller"><span class="marketplace-label">Marketplace</span><span>vendu par {offer.seller_name}</span></p>}
   </div></div>
   <PriceBlock offer={offer} />
   <div class="offer-status"><AvailabilityBadge availability={offer.availability} />
     {offer.delivery_info && <p>{offer.delivery_info}</p>}
-    <p class="checked">Relevé le <time datetime={offer.checked_at}>{formatDateTime(offer.checked_at)}</time><span class="timezone"> (heure de Paris)</span></p>
+    {ownDate && <p class="checked">Relevé le <time datetime={offer.checked_at}>{formatDateTime(offer.checked_at)}</time><span class="timezone"> (heure de Paris)</span></p>}
   </div>
-  <a class:list={['button', leading ? 'button-primary' : 'button-secondary']} href={makeGoHref(offer.page_offer_id, offer.snapshot_id, sourceParams)} rel="sponsored nofollow" aria-label={`Voir l’offre chez ${offer.merchant_name}${offer.seller_name ? `, vendu par ${offer.seller_name}` : ''}`}>Voir chez {offer.merchant_name} <span aria-hidden="true">↗</span></a>
+  <a class:list={['button', leading ? 'button-primary' : 'button-secondary']} href={makeGoHref(offer.page_offer_id, offer.snapshot_id, sourceParams)} rel="sponsored nofollow" aria-label={`Voir l’offre chez ${offer.merchant_name}${offer.seller_name ? `, vendu par ${offer.seller_name}` : ''} (site marchand)`}>Voir chez {offer.merchant_name} <span aria-hidden="true">↗</span></a>
 </li>

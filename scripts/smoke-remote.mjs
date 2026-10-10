@@ -146,3 +146,12 @@ if (!robots.body.includes('Sitemap: https://comparateur.aymen-for-pic.workers.de
 }
 
 console.log('SMOKE PHASE 4C OK : canonical, Product/AggregateOffer, Breadcrumb, sitemap, robots, noindex conservé');
+
+// Phase 4D : pages fixes servies sans redirection, canonical identique au lien interne et au sitemap.
+for (const path of ['/a-propos', '/comment-ca-marche', '/affiliation-transparence']) {
+  const { body } = await fetchUntil(path, 200, () => true, { redirect: 'manual' });
+  if (!body.includes(`rel="canonical" href="https://comparateur.aymen-for-pic.workers.dev${path}"`)) {
+    throw new Error(`${path}: canonical incohérent avec l'URL servie`);
+  }
+}
+console.log('SMOKE PHASE 4D OK : pages fixes sans redirection, canonical cohérent');

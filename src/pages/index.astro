@@ -22,58 +22,80 @@ for (const key of ['utm_source', 'utm_campaign', 'utm_content']) {
   if (value) params.set(key, value);
 }
 const href = (slug: string) => `/comparatifs/${encodeURIComponent(slug)}${params.size ? `?${params}` : ''}`;
+const plural = (n: number, word: string) => `${n} ${word}${n !== 1 ? 's' : ''}`;
+// Repères factuels calculés depuis D1 (aucun chiffre saisi à la main).
+const allOffers = cards.flatMap((card) => card.offers);
+const merchantCount = new Set(allOffers.map((offer) => offer.merchant_name)).size;
+const latestCheck = allOffers.map((offer) => offer.checked_at).sort().at(-1);
+const shippingNote = (shipping: number | null) =>
+  shipping === null ? 'livraison à vérifier' : shipping === 0 ? 'livraison offerte' : 'livraison incluse';
 ---
 <Base
-  title="Comparateur — les offres en clair"
-  description="Comparez les offres marchandes : prix total, livraison, disponibilité et vendeur. Des relevés datés et un classement expliqué."
+  title="Comparateur — prix, livraison et vendeurs comparés avant d’acheter"
+  description="Le même produit chez plusieurs marchands : comparez le prix, les frais de livraison, la disponibilité et le vendeur. Relevés datés, classement expliqué."
   canonicalPath="/"
   structuredData={websiteJsonLd(absoluteSiteUrl('/'))}
 >
   <main id="contenu">
     <div class="container">
       <section class="home-hero" aria-labelledby="hero-title">
-        <div>
-          <span class="eyebrow">Comparez avant d’acheter</span>
-          <h1 id="hero-title">Comparez les offres.<span class="serif">Choisissez où acheter.</span></h1>
-          <p class="hero-lead">Un même produit chez plusieurs marchands : comparez les prix, les frais de livraison, la disponibilité et le vendeur. L’achat se fait ensuite chez le marchand.</p>
-          <div class="hero-actions"><a class="button button-primary" href="#comparatifs">Comparer les produits <span aria-hidden="true">↓</span></a><a class="text-link" href="/comment-ca-marche">Notre méthode</a></div>
-        </div>
-        <aside class="hero-guide" aria-label="Les informations pour décider">
-          <p class="guide-intro">UN ACHAT. TROIS REPÈRES.</p>
-          <div class="guide-item"><span class="guide-number" aria-hidden="true">01</span><div><h2>Le prix complet</h2><p>La livraison est incluse dans le total lorsqu’elle est connue.</p></div></div>
-          <div class="guide-item"><span class="guide-number" aria-hidden="true">02</span><div><h2>Le vendeur identifié</h2><p>Une enseigne et un vendeur marketplace sont distingués.</p></div></div>
-          <div class="guide-item"><span class="guide-number" aria-hidden="true">03</span><div><h2>Un relevé daté</h2><p>Vous savez quand chaque offre a été vérifiée.</p></div></div>
-        </aside>
+        <span class="eyebrow">Comparateur de prix</span>
+        <h1 id="hero-title">Comparez les offres.<span class="serif">Choisissez où acheter.</span></h1>
+        <p class="hero-lead">Un même produit chez plusieurs marchands : comparez les prix, les frais de livraison, la disponibilité et le vendeur. L’achat se fait ensuite chez le marchand.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#comparatifs">Voir les comparatifs <span aria-hidden="true">↓</span></a><a class="text-link" href="/comment-ca-marche">Notre méthode</a></div>
+        {!unavailable && cards.length > 0 && (
+          <p class="hero-stats">
+            <span><strong>{cards.length}</strong> produit{cards.length !== 1 ? 's' : ''} comparé{cards.length !== 1 ? 's' : ''}</span>
+            <span><strong>{allOffers.length}</strong> offre{allOffers.length !== 1 ? 's' : ''}</span>
+            <span><strong>{merchantCount}</strong> marchand{merchantCount !== 1 ? 's' : ''}</span>
+            {latestCheck && <span>Relevés au <time datetime={latestCheck}>{formatDate(latestCheck)}</time></span>}
+          </p>
+        )}
       </section>
-      <div class="trust-strip"><span><b aria-hidden="true">✓</b> Classement expliqué</span><span><b aria-hidden="true">✓</b> Livraison sans ambiguïté</span><span><b aria-hidden="true">✓</b> Achat chez le marchand</span></div>
       <section id="comparatifs" class="catalog-section" aria-labelledby="catalog-title">
-        <div class="section-heading"><div><span class="eyebrow">À comparer maintenant</span><h2 id="catalog-title">Trouvez votre prochain achat.</h2></div>{!unavailable && <span class="count-label">{cards.length} comparatif{cards.length !== 1 ? 's' : ''} disponible{cards.length !== 1 ? 's' : ''}</span>}</div>
+        <div class="section-heading"><h2 id="catalog-title">Les comparatifs</h2>{!unavailable && <span class="count-label">{plural(cards.length, 'comparatif')} disponible{cards.length !== 1 ? 's' : ''}</span>}</div>
         {unavailable ? <div class="empty-state" role="status"><h3>Les offres font une pause.</h3><p>Le catalogue est temporairement indisponible. Réessayez dans quelques instants.</p><a class="button button-secondary" href="/">Réessayer</a></div> : cards.length === 0 ? <div class="empty-state"><h3>Les premiers comparatifs arrivent.</h3><p>Les offres seront présentées ici une fois leurs informations vérifiées.</p></div> :
-        <div class="catalog-grid">{cards.map(({ page, offers }, index) => {
+        <div class="catalog-grid">{cards.map(({ page, offers }) => {
           const first = offers[0];
           const best = first?.availability === 'in_stock' ? first : null;
           const latest = offers.map(o => o.checked_at).sort().at(-1);
+          const prices = offers.map(o => o.price_cents);
+          const low = prices.length ? Math.min(...prices) : null;
+          const high = prices.length ? Math.max(...prices) : null;
+          const name = `${page.brand ?? ''} ${page.model ?? ''}`.trim();
           return <article class:list={['product-card', { 'product-card--with-media': Boolean(page.image_url) }]}>
-            {page.image_url && <a class="card-media" href={href(page.slug)} aria-label={`Voir le comparatif ${page.brand} ${page.model}`}><img src={page.image_url} alt={page.image_alt ?? `${page.brand} ${page.model}`} loading="lazy" decoding="async" /></a>}
-            <div class="card-topline"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif'}</span><span class="card-index" aria-hidden="true">{String(index + 1).padStart(2,'0')}</span></div>
-            <span class="eyebrow">{page.brand}</span><h3>{page.model}</h3>
-            <div class="card-bottom"><div>
-              <span class="card-price-label">{best ? (totalCents(best) === null ? 'Prix du produit en stock · hors livraison' : 'Première offre en stock · livraison incluse') : 'Disponibilité'}</span>
-              {best ? <><strong class="card-price">{formatCents(totalCents(best) ?? best.price_cents)}</strong><span class="card-detail">{best.shipping_cents === null ? 'Livraison à vérifier · total non calculable' : 'Prix total connu'}</span></> : <strong>{offers.length ? 'À vérifier chez les marchands' : 'Aucune offre actuelle'}</strong>}
-              <span class="card-detail">{offers.length} offre{offers.length !== 1 ? 's' : ''} comparée{offers.length !== 1 ? 's' : ''}</span>
-            </div><a class="button button-secondary" href={href(page.slug)} aria-label={`Comparer les offres pour ${page.brand} ${page.model}`}>Comparer les offres <span aria-hidden="true">→</span></a></div>
-            {latest && <p class="card-date">Dernier relevé : <time datetime={latest}>{formatDate(latest)}</time></p>}
+            {page.image_url && <div class="card-media"><img src={page.image_url} alt={page.image_alt ?? name} loading="lazy" decoding="async" /></div>}
+            <span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif'}</span>
+            <h3><a class="card-link" href={href(page.slug)}><span class="card-brand">{page.brand}</span> {page.model}</a></h3>
+            <div class="card-offer">
+              {best ? <>
+                <span class="card-price-label">Meilleure offre en stock</span>
+                <strong class="card-price">{formatCents(totalCents(best) ?? best.price_cents)}</strong>
+                <span class="card-detail">chez {best.merchant_name}, {shippingNote(best.shipping_cents)}</span>
+              </> : <>
+                <span class="card-price-label">Disponibilité</span>
+                <strong class="card-price card-price--muted">{offers.length ? 'À vérifier' : 'Aucune offre'}</strong>
+              </>}
+            </div>
+            <p class="card-meta">
+              <span>{plural(offers.length, 'offre')} comparée{offers.length !== 1 ? 's' : ''}</span>
+              {low !== null && high !== null && <span>{low === high ? `même prix : ${formatCents(low)}` : `prix de ${formatCents(low)} à ${formatCents(high)}`}</span>}
+            </p>
+            <div class="card-footer">
+              <span class="button button-secondary card-cta" aria-hidden="true">Comparer les offres <span>→</span></span>
+              {latest && <span class="card-date">Relevé le <time datetime={latest}>{formatDate(latest)}</time></span>}
+            </div>
           </article>;
         })}</div>}
       </section>
     </div>
     <section class="method-section" aria-labelledby="method-title"><div class="container">
-      <div class="method-header"><h2 id="method-title">Moins de flou.<br /><span class="serif">Plus de repères.</span></h2><a class="text-link" href="/comment-ca-marche">Comment nous comparons <span aria-hidden="true">↗</span></a></div>
+      <div class="method-header"><h2 id="method-title">Comment nous comparons</h2><a class="text-link" href="/comment-ca-marche">La méthode en détail <span aria-hidden="true">→</span></a></div>
       <div class="method-grid">
         <div class="method-step"><span class="step" aria-hidden="true">01</span><h3>Des offres relevées</h3><p>Les informations affichées par les marchands sont relevées et datées.</p></div>
-        <div class="method-step"><span class="step" aria-hidden="true">02</span><h3>Le coût visible</h3><p>Prix et livraison sont additionnés lorsqu’un total peut être calculé.</p></div>
-        <div class="method-step"><span class="step" aria-hidden="true">03</span><h3>Qui vend, précisément</h3><p>Les vendeurs marketplace sont indiqués lorsqu’ils sont identifiés dans le relevé.</p></div>
-        <div class="method-step"><span class="step" aria-hidden="true">04</span><h3>À vous de choisir</h3><p>Vous consultez les conditions finales et achetez directement chez le marchand.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">02</span><h3>Le coût visible</h3><p>Prix et livraison sont additionnés lorsqu’un total peut être calculé. Une livraison inconnue n’est jamais comptée comme gratuite.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">03</span><h3>Qui vend, précisément</h3><p>Un vendeur tiers de marketplace est indiqué « vendu par » lorsqu’il est identifié dans le relevé.</p></div>
+        <div class="method-step"><span class="step" aria-hidden="true">04</span><h3>À vous de choisir</h3><p>Le classement ne dépend d’aucune commission. Vous achetez directement chez le marchand.</p></div>
       </div>
     </div></section>
     <div class="container disclosure-wrap"><AffiliateDisclosure /></div>
