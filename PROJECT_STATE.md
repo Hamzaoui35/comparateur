@@ -1,31 +1,29 @@
 # PROJECT STATE
 Statut : en cours
-Objectif actuel : Phase 4B — design public et préparation affiliation
-Dernière étape validée : audit du dépôt, D1 et déploiement actuel réussi (244907d).
-En cours : validation Cloudflare puis contrôles visuels en production.
-Prochaine action exacte : pousser le design, attendre le build Cloudflare et le smoke, puis vérifier les 5 largeurs.
+Objectif actuel : Phase 4C — médias produits + préparation SEO Google
+Dernière étape validée : Phase 4B design public déployé ; build Cloudflare et smoke Phase 4B réussis.
+En cours : schéma média avec contrôle des droits, SEO technique, données structurées, sitemap/robots.
+Prochaine action exacte : créer migration product_media, adapter import/lecture/UI/SEO, appliquer D1, tester et déployer.
 
-## Décisions prises
-- Direction comparateur éditorial : ivoire, bleu nuit, vert profond ; CSS natif, aucune dépendance UI.
-- Identité temporaire « Comparateur » ; aucun domaine ni image produit inventée.
-- Classement, /go/, tracking et historique conservés ; noindex partout.
-- Accueil dynamique, fixtures source=seed exclues de la vitrine par provenance ; aucune suppression D1.
-- 3 directions étudiées : éditorial (retenu avec cartes fonctionnelles), catalogue shopping, tech grand public.
-- GitHub main déclenche le build Cloudflare existant (tests + build + déploiement + smoke).
+## Décisions
+- noindex reste actif pendant toute la Phase 4C.
+- Aucun visuel fabricant n'est copié sans droit commercial explicite.
+- Les médias ne peuvent être importés que si leur base de droit est documentée : owned, licensed, affiliate_feed, manufacturer_permission ou public_domain.
+- Dreame et Tineco interdisent actuellement la réutilisation commerciale de leurs contenus de site sans autorisation : leurs images officielles ne sont donc pas copiées.
+- L'UI accepte 1 image principale + galerie ; elle reste propre sans image.
+- SEO cible : canonical, Open Graph, Product + AggregateOffer JSON-LD, BreadcrumbList, sitemap.xml, robots.txt.
+- Les résultats Google seront préparés mais pas activés tant que noindex n'est pas retiré.
 
-## Validation à faire
-- npm test : 34/34 ; test catalogue ajouté. Build local : compilation OK, pré-rendu bloqué par le proxy local.
-- npm run build et smoke à valider sur le build Cloudflare existant.
-- Vérification visuelle 360/390/768/1024/1440 px ; clavier et états limites.
-- Déploiement comparateur + smoke distant + relecture production.
+## Blocage externe pour les vraies photos
+- Obtenir un visuel autorisé via réseau d'affiliation/feed, permission fabricant, photo appartenant à Aymen ou autre licence commerciale.
+- Ne jamais coller/copier une image trouvée sur Google ou sur une fiche fabricant sans droit.
 
 ## À fournir par Aymen avant lancement public
-- Identité juridique de l’éditeur, statut et mentions d’immatriculation applicables.
-- Adresse de publication, responsable de publication, coordonnées de contact publiques.
-- Contact confidentialité, durées de conservation et validation des mentions/confidentialité.
-- Nom définitif éventuel ; acceptations d’affiliation (aucune activation dans cette phase).
+- Identité/statut/adresse/contact public pour mentions légales/confidentialité.
+- Acceptation d'au moins un réseau d'affiliation.
+- Validation explicite avant retrait de noindex et soumission Search Console.
 
-## Ressources conservées
+## Ressources
 - Worker : https://comparateur.aymen-for-pic.workers.dev
-- D1 : comparateur-db ; aucune migration prévue.
-- Affiliation : aucun nouveau lien actif ; tokens lowercase de phase 4 conservés.
+- D1 : comparateur-db
+- GitHub : Hamzaoui35/comparateur
