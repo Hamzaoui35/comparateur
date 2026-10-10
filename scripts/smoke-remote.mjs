@@ -103,7 +103,9 @@ for (const entry of realProducts) {
 if (root.body.includes('Produit Test')) throw new Error('Accueil : fixture affichée');
 for (const path of ['/', '/a-propos', '/comment-ca-marche', '/affiliation-transparence', '/confidentialite', '/mentions-legales', '/contact']) {
   const { body } = await fetchUntil(path, 200);
-  if (!body.includes('content="noindex"') || !body.includes('<main') || !body.includes('<footer')) throw new Error(`${path}: structure publique ou noindex absent`);
+  if (!/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(body) || !body.includes('<main') || !body.includes('<footer')) {
+    throw new Error(`${path}: structure publique ou noindex absent`);
+  }
 }
 const notFound = await fetchUntil('/page-inexistante-phase4b', 404);
 if (!notFound.body.includes('noindex') || !notFound.body.includes('Revenir aux comparatifs')) throw new Error('404 sans interface publique');
