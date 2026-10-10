@@ -7,9 +7,29 @@ export interface ComparisonPage {
   slug: string;
   template: string;
   main_product_id: number | null;
+  published_at: string | null;
   brand: string | null;
   model: string | null;
   category: string | null;
+  gtin: string | null;
+  mpn: string | null;
+  manufacturer_url: string | null;
+  image_url: string | null;
+  image_alt: string | null;
+  last_checked_at: string | null;
+}
+
+export interface ProductMedia {
+  id: number;
+  product_id: number;
+  url: string;
+  alt_text: string;
+  role: 'primary' | 'gallery';
+  position: number;
+  source_url: string;
+  rights_basis: 'owned' | 'licensed' | 'affiliate_feed' | 'manufacturer_permission' | 'public_domain';
+  rights_note: string;
+  checked_at: string;
 }
 
 export interface PageOfferRow {
@@ -45,7 +65,17 @@ export interface ProductGroup {
 export async function getPublishedPage(db: D1Database, slug: string): Promise<ComparisonPage | null> {
   return db
     .prepare(
-      `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, p.brand, p.model, p.category
+      `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, pg.published_at,
+              p.brand, p.model, p.category, p.gtin, p.mpn, p.manufacturer_url,
+              (SELECT pm.url FROM product_media pm
+                WHERE pm.product_id = p.id AND pm.role = 'primary'
+                ORDER BY pm.position, pm.id LIMIT 1) AS image_url,
+              (SELECT pm.alt_text FROM product_media pm
+                WHERE pm.product_id = p.id AND pm.role = 'primary'
+                ORDER BY pm.position, pm.id LIMIT 1) AS image_alt,
+              (SELECT MAX(s.checked_at)
+                 FROM offers o JOIN offer_snapshots s ON s.offer_id = o.id
+                WHERE o.product_id = p.id) AS last_checked_at
          FROM pages pg LEFT JOIN products p ON p.id = pg.main_product_id
         WHERE pg.slug = ?1 AND pg.published_at IS NOT NULL`,
     )
@@ -58,7 +88,17 @@ export async function getPublishedPage(db: D1Database, slug: string): Promise<Co
  */
 export async function getPublishedComparisons(db: D1Database): Promise<ComparisonPage[]> {
   const { results } = await db.prepare(
-    `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, p.brand, p.model, p.category
+    `SELECT pg.id, pg.slug, pg.template, pg.main_product_id, pg.published_at,
+            p.brand, p.model, p.category, p.gtin, p.mpn, p.manufacturer_url,
+            (SELECT pm.url FROM product_media pm
+              WHERE pm.product_id = p.id AND pm.role = 'primary'
+              ORDER BY pm.position, pm.id LIMIT 1) AS image_url,
+            (SELECT pm.alt_text FROM product_media pm
+              WHERE pm.product_id = p.id AND pm.role = 'primary'
+              ORDER BY pm.position, pm.id LIMIT 1) AS image_alt,
+            (SELECT MAX(s2.checked_at)
+               FROM offers o2 JOIN offer_snapshots s2 ON s2.offer_id = o2.id
+              WHERE o2.product_id = p.id) AS last_checked_at
        FROM pages pg JOIN products p ON p.id = pg.main_product_id
       WHERE pg.published_at IS NOT NULL
         AND (NOT EXISTS (
@@ -69,6 +109,20 @@ export async function getPublishedComparisons(db: D1Database): Promise<Compariso
         ))
       ORDER BY pg.published_at DESC, pg.id ASC`,
   ).all<ComparisonPage>();
+  return results;
+}
+
+/** Médias produit autorisés à l'affichage, dans l'ordre éditorial. */
+export async function getProductMedia(db: D1Database, productId: number): Promise<ProductMedia[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT id, product_id, url, alt_text, role, position, source_url, rights_basis, rights_note, checked_at
+         FROM product_media
+        WHERE product_id = ?1
+        ORDER BY position, id`,
+    )
+    .bind(productId)
+    .all<ProductMedia>();
   return results;
 }
 
