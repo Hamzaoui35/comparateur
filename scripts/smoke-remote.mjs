@@ -155,3 +155,8 @@ for (const path of ['/a-propos', '/comment-ca-marche', '/affiliation-transparenc
   }
 }
 console.log('SMOKE PHASE 4D OK : pages fixes sans redirection, canonical cohérent');
+
+// Marqueur de fin 4D : cette vue interne n'existe en D1 que si tout le smoke a réussi.
+if (realProducts.length > 0) {
+  await fetchUntil(`/comparatifs/${realProducts[0].page.slug}?utm_source=smoke&utm_campaign=phase4d&utm_content=complete`, 200);
+}

@@ -311,3 +311,10 @@
   @media (max-width: 600px) { .home-hero { padding-block: 28px 20px; } .offer-row { grid-template-columns: minmax(0, 1fr) auto; } }
 }
 @layer components { .home-hero { padding-block: 44px 28px; } .hero-stats { margin-top: 28px; } }
+@layer responsive {
+  @media (min-width: 801px) {
+    .home-hero { padding-block: 40px 26px; }
+    .catalog-section { padding-top: 20px; }
+    .catalog-section .section-heading { margin-bottom: 20px; }
+  }
+}
