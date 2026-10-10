@@ -4,19 +4,24 @@ import Base from '../../layouts/Base.astro';
 import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
 import OfferCard from '../../components/OfferCard.astro';
 import PriceBlock from '../../components/PriceBlock.astro';
-import { getActiveOffers, getPublishedPage, groupByProduct, type ProductGroup, type ComparisonPage } from '../../lib/comparison';
+import ProductMedia from '../../components/ProductMedia.astro';
+import { getActiveOffers, getProductMedia, getPublishedPage, groupByProduct, type ProductGroup, type ComparisonPage, type ProductMedia as ProductMediaRow } from '../../lib/comparison';
 import { rankGroup, rankOffers } from '../../lib/ranking';
 import { formatDateTime } from '../../lib/format';
 import { makeGoHref, recordPageView } from '../../lib/tracking';
+import { breadcrumbJsonLd, productJsonLd } from '../../lib/seo';
+import { absoluteSiteUrl } from '../../lib/site';
 export const prerender = false;
 let page: ComparisonPage | null = null;
 let groups: ProductGroup[] = [];
+let media: ProductMediaRow[] = [];
 let unavailable = false;
 try {
   page = await getPublishedPage(env.DB, Astro.params.slug ?? '');
   if (page) {
     await recordPageView(env.DB, page.id, Astro.request);
     groups = groupByProduct(await getActiveOffers(env.DB, page.id)).map(group => ({ ...group, offers: rankOffers(group.offers) }));
+    if (page.main_product_id) media = await getProductMedia(env.DB, page.main_product_id);
   }
 } catch { unavailable = true; }
 Astro.response.status = unavailable ? 503 : page ? 200 : 404;
@@ -28,14 +33,32 @@ const model = page?.model ?? main?.model ?? 'Comparatif';
 const productName = `${brand} ${model}`.trim();
 const best = main?.offers[0];
 const latest = main?.offers.map(o => o.checked_at).sort().at(-1);
-const title = unavailable ? 'Comparatif temporairement indisponible' : !page ? 'Page introuvable' : `${productName} : prix, livraison et offres comparés`;
+const title = unavailable ? 'Comparatif temporairement indisponible' : !page ? 'Page introuvable' : `${productName} : prix et offres comparés | Comparateur`;
+const description = page
+  ? `Comparez ${main?.offers.length ?? 0} offre${(main?.offers.length ?? 0) !== 1 ? 's' : ''} pour ${productName} : prix, livraison, disponibilité et vendeurs, avec relevés datés.`
+  : 'Comparatif indisponible.';
+const canonicalPath = page ? `/comparatifs/${page.slug}` : Astro.url.pathname;
+const canonicalUrl = absoluteSiteUrl(canonicalPath);
+const structuredData = page && main
+  ? [productJsonLd(page, main.offers, media, canonicalUrl), breadcrumbJsonLd(productName, canonicalUrl)].filter(Boolean)
+  : [];
 ---
-<Base title={title}>
+<Base
+  title={title}
+  description={description}
+  canonicalPath={canonicalPath}
+  image={media[0]?.url ?? page?.image_url ?? null}
+  type={page ? 'product' : 'website'}
+  structuredData={structuredData}
+>
   <main id="contenu" class="container">
     {unavailable || !page ? <section class="error-page"><span class="eyebrow">{unavailable ? 'Une interruption temporaire' : 'Page introuvable · 404'}</span><h1>{unavailable ? 'Les offres sont momentanément indisponibles.' : 'Cette page ne se trouve pas ici.'}</h1><p>{unavailable ? 'Réessayez dans quelques instants. Aucun prix ne peut être confirmé pour le moment.' : 'L’adresse est peut-être incomplète. Retrouvez les comparatifs disponibles depuis l’accueil.'}</p><a class="button button-primary" href="/">Revenir aux comparatifs <span aria-hidden="true">→</span></a></section> : <>
       <nav class="breadcrumb" aria-label="Fil d’Ariane"><a href="/">Accueil</a><span aria-hidden="true">/</span><a href="/#comparatifs">Comparatifs</a><span aria-hidden="true">/</span><span aria-current="page">{productName}</span></nav>
       <section class="comparison-hero" aria-labelledby="product-title">
-        <div class="product-heading"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif des offres'}</span><span class="eyebrow">{brand}</span><h1 id="product-title">{model}</h1><p>Où l’acheter ? Comparez les prix, la livraison et les vendeurs pour ce même modèle.</p><div class="product-meta"><span>{main?.offers.length ?? 0} offre{main?.offers.length !== 1 ? 's' : ''} comparée{main?.offers.length !== 1 ? 's' : ''}</span>{latest && <span>Dernier relevé : <time datetime={latest}>{formatDateTime(latest)}</time> (Paris)</span>}</div></div>
+        <div class:list={['product-intro', { 'product-intro--with-media': media.length > 0 }]}>
+          <ProductMedia media={media} compact />
+          <div class="product-heading"><span class="category">{page.category?.replaceAll('-', ' ') ?? 'Comparatif des offres'}</span><span class="eyebrow">{brand}</span><h1 id="product-title">{model}</h1><p>Où l’acheter ? Comparez les prix, la livraison et les vendeurs pour ce même modèle.</p><div class="product-meta"><span>{main?.offers.length ?? 0} offre{main?.offers.length !== 1 ? 's' : ''} comparée{main?.offers.length !== 1 ? 's' : ''}</span>{latest && <span>Dernier relevé : <time datetime={latest}>{formatDateTime(latest)}</time> (Paris)</span>}</div></div>
+        </div>
         {best && rankGroup(best) <= 2 ? <aside class="best-offer" aria-label="Première offre en stock du classement"><span class="eyebrow">Meilleure offre disponible du classement</span><PriceBlock offer={best} large /><p class="best-merchant">chez <strong>{best.merchant_name}</strong></p>{best.seller_name ? <p class="seller">Marketplace · vendu par {best.seller_name}</p> : <p class="seller">Vendeur non précisé dans le relevé</p>}<a class="button button-light" href={makeGoHref(best.page_offer_id, best.snapshot_id, Astro.url.searchParams)} rel="sponsored nofollow" aria-label={`Voir l’offre en tête du classement chez ${best.merchant_name}`}>Voir chez {best.merchant_name} <span aria-hidden="true">↗</span></a><p class="checked">En stock au relevé du <time datetime={best.checked_at}>{formatDateTime(best.checked_at)}</time> (Paris).</p><p class="best-explainer">Parmi les offres comparées, selon la disponibilité et les frais connus. <a href="/comment-ca-marche#classement">Voir la règle de classement</a>.</p></aside> : <aside class="info-box"><h2>{!best ? 'Pas encore d’offre actuelle' : main?.offers.every(o => o.availability === 'out_of_stock') ? 'Aucune offre en stock au relevé' : 'Disponibilité à confirmer'}</h2><p>{!best ? 'Ce produit reste référencé. Les offres apparaîtront ici dès qu’un relevé sera disponible.' : 'Les offres ci-dessous sont en précommande, indisponibles ou à vérifier. Aucun achat disponible immédiatement ne peut être confirmé.'}</p></aside>}
       </section>
       {groups.length === 0 && <div class="empty-state"><h2>Aucune offre disponible pour le moment.</h2><p>Revenez consulter cette page pour un prochain relevé.</p></div>}
