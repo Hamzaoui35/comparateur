@@ -108,3 +108,38 @@ const notFound = await fetchUntil('/page-inexistante-phase4b', 404);
 if (!notFound.body.includes('noindex') || !notFound.body.includes('Revenir aux comparatifs')) throw new Error('404 sans interface publique');
 if (!root.body.includes('Certains liens peuvent être affiliés')) throw new Error('Disclosure absente');
 console.log('SMOKE PHASE 4B OK : catalogue réel, 6 pages fixes, 404, disclosure, noindex');
+
+
+// Phase 4C : SEO technique prêt mais indexation encore bloquée par noindex.
+const seoHome = await fetchUntil('/', 200);
+if (!seoHome.body.includes('rel="canonical" href="https://comparateur.aymen-for-pic.workers.dev/"')) {
+  throw new Error('SEO: canonical accueil absent ou incorrect');
+}
+if (!seoHome.body.includes('"@type":"WebSite"')) throw new Error('SEO: JSON-LD WebSite absent');
+
+for (const entry of realProducts) {
+  const slug = entry.page.slug;
+  const { body } = await fetchUntil(`/comparatifs/${slug}?utm_source=smoke&utm_campaign=phase4c`, 200);
+  if (!body.includes(`rel="canonical" href="https://comparateur.aymen-for-pic.workers.dev/comparatifs/${slug}"`)) {
+    throw new Error(`${slug}: canonical absent ou pollué par UTM`);
+  }
+  for (const expected of ['"@type":"Product"', '"@type":"AggregateOffer"', '"priceCurrency":"EUR"', '"@type":"BreadcrumbList"']) {
+    if (!body.includes(expected)) throw new Error(`${slug}: donnée structurée absente: ${expected}`);
+  }
+  if (entry.product.gtin && !body.includes(entry.product.gtin)) throw new Error(`${slug}: GTIN absent du JSON-LD`);
+}
+
+const sitemap = await fetchUntil('/sitemap.xml', 200, ({ response, body }) =>
+  response.headers.get('content-type')?.includes('application/xml') && body.includes('<urlset'));
+for (const entry of realProducts) {
+  if (!sitemap.body.includes(`/comparatifs/${entry.page.slug}`)) throw new Error('Sitemap: comparatif réel manquant');
+}
+if (sitemap.body.includes('produit-test')) throw new Error('Sitemap: fixture exposée');
+
+const robots = await fetchUntil('/robots.txt', 200, ({ response, body }) =>
+  response.headers.get('content-type')?.includes('text/plain') && body.includes('User-agent: *'));
+if (!robots.body.includes('Sitemap: https://comparateur.aymen-for-pic.workers.dev/sitemap.xml')) {
+  throw new Error('robots.txt: sitemap absent');
+}
+
+console.log('SMOKE PHASE 4C OK : canonical, Product/AggregateOffer, Breadcrumb, sitemap, robots, noindex conservé');
