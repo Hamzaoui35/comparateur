@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import { getActiveOffers, getPublishedPage, groupByProduct } from '../../lib/comparison';
 import { rankGroup, rankOffers, totalCents } from '../../lib/ranking';
 import { availabilityLabel, formatCents, formatDate, shippingLabel } from '../../lib/format';
+import { makeGoHref, recordPageView } from '../../lib/tracking';
 
 export const prerender = false;
 
@@ -17,6 +18,8 @@ if (!page) {
     headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' },
   });
 }
+
+await recordPageView(env.DB, page.id, Astro.request);
 
 const groups = groupByProduct(await getActiveOffers(env.DB, page.id)).map((group) => ({
   ...group,
@@ -79,7 +82,7 @@ const title = !main
                     </td>
                     <td>{formatDate(offer.checked_at)}</td>
                     <td>
-                      <a href={offer.affiliate_url ?? offer.merchant_url} rel="sponsored nofollow">Voir l'offre</a>
+                      <a href={makeGoHref(offer.page_offer_id, offer.snapshot_id, Astro.url.searchParams)} rel="sponsored nofollow">Voir l'offre</a>
                     </td>
                   </tr>
                 );
