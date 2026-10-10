@@ -1,0 +1,108 @@
+---
+// Page comparative générique : tout le contenu vient de D1 (aucun produit, marque ou marchand dans le code).
+import { env } from 'cloudflare:workers';
+import Base from '../../layouts/Base.astro';
+import { getActiveOffers, getPublishedPage, groupByProduct } from '../../lib/comparison';
+import { rankGroup, rankOffers, totalCents } from '../../lib/ranking';
+import { availabilityLabel, formatCents, formatDate, shippingLabel } from '../../lib/format';
+
+export const prerender = false;
+
+const slug = Astro.params.slug ?? '';
+const page = await getPublishedPage(env.DB, slug);
+
+if (!page) {
+  return new Response('Page introuvable', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' },
+  });
+}
+
+const groups = groupByProduct(await getActiveOffers(env.DB, page.id)).map((group) => ({
+  ...group,
+  offers: rankOffers(group.offers),
+}));
+const main = groups.find((g) => g.product_id === page.main_product_id) ?? groups[0];
+const productName = main ? `${main.brand} ${main.model}` : '';
+const title = !main
+  ? 'Comparatif'
+  : page.template === 'meilleur-prix'
+    ? `Où acheter ${productName} au meilleur prix ?`
+    : `${productName} : comparatif des offres`;
+---
+<Base title={title}>
+  <main>
+    <h1>{title}</h1>
+
+    {groups.length === 0 && <p>Aucune offre disponible pour le moment.</p>}
+
+    {groups.map((group) => {
+      const best = group.offers[0];
+      return (
+        <section>
+          {groups.length > 1 && <h2>{group.brand} {group.model}</h2>}
+
+          {best && rankGroup(best) <= 2 && (
+            <p class="best">
+              Meilleure offre disponible : <strong>{formatCents(totalCents(best) ?? best.price_cents)}</strong>
+              {best.shipping_cents === null && <span> + livraison à vérifier</span>} chez {best.merchant_name}.
+            </p>
+          )}
+
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Marchand</th>
+                <th scope="col">Prix</th>
+                <th scope="col">Livraison</th>
+                <th scope="col">Total</th>
+                <th scope="col">Disponibilité</th>
+                <th scope="col">Relevé le</th>
+                <th scope="col"><span class="sr-only">Lien</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {group.offers.map((offer) => {
+                const total = totalCents(offer);
+                return (
+                  <tr data-snapshot-id={offer.snapshot_id} data-page-offer-id={offer.page_offer_id}>
+                    <td>
+                      {offer.merchant_name}
+                      {offer.is_recommended === 1 && <span class="badge"> Recommandé</span>}
+                    </td>
+                    <td>{formatCents(offer.price_cents)}</td>
+                    <td>{shippingLabel(offer.shipping_cents)}</td>
+                    <td>{total === null ? '—' : formatCents(total)}</td>
+                    <td>
+                      {availabilityLabel(offer.availability)}
+                      {offer.delivery_info && <small> · {offer.delivery_info}</small>}
+                    </td>
+                    <td>{formatDate(offer.checked_at)}</td>
+                    <td>
+                      <a href={offer.affiliate_url ?? offer.merchant_url} rel="sponsored nofollow">Voir l'offre</a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      );
+    })}
+
+    <p class="note">
+      Prix relevés à la date indiquée ; ils peuvent avoir changé depuis. Certains liens sont affiliés : nous pouvons
+      percevoir une commission, sans surcoût pour vous. Le classement ne dépend jamais de la commission.
+    </p>
+  </main>
+</Base>
+
+<style>
+  main { max-width: 60rem; margin: 0 auto; padding: 1rem; font-family: system-ui, sans-serif; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0 2rem; }
+  th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .badge { font-size: 0.8em; font-weight: 600; }
+  .note { font-size: 0.85em; color: #555; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  @media (max-width: 40rem) { table { display: block; overflow-x: auto; } }
+</style>
