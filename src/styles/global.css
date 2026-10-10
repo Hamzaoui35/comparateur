@@ -206,3 +206,18 @@
     .footer-grid nav a { min-height: 44px; }
   }
 }
+
+
+/* Le visiteur venu de Google doit voir la première offre sans devoir traverser un long en-tête mobile. */
+@layer responsive {
+  @media (max-width: 600px) {
+    .breadcrumb { padding-block: 12px; gap: 6px; }
+    .breadcrumb > span[aria-current="page"], .breadcrumb > span:nth-last-child(2) { display: none; }
+    .product-heading .eyebrow { display: none; }
+    .product-heading h1 { font-size: clamp(1.95rem, 8.8vw, 2.5rem); }
+    .product-heading > p { margin-top: 12px; line-height: 1.45; }
+    .product-meta { margin-top: 10px; gap: 6px 12px; }
+    .jump-offers { margin-top: 2px; }
+    .comparison-hero { gap: 16px; padding-bottom: 24px; }
+  }
+}
